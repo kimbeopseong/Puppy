@@ -15,9 +15,11 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.example.puppy.R;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class HomeFragment extends ListFragment {
-
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
+    public HomeFragment(){ }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {

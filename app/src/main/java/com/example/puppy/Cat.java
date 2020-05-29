@@ -4,6 +4,7 @@ public class Cat {
     private String profile;
     private String catName;
     private int catAge;
+    private int catSex;
     private String catSpecies;
 
     public Cat(){
@@ -31,5 +32,12 @@ public class Cat {
     }
     public void setCatSpecies(String catSpecies) {
         this.catSpecies = catSpecies;
+    }
+    public int getCatSex() {
+        return catSex;
+    }
+
+    public void setCatSex(int catSex) {
+        this.catSex = catSex;
     }
 }
