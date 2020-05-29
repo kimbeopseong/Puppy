@@ -15,26 +15,26 @@
 
 
         <EditText
-            android:id="@+id/editTextUsername"
+            android:id="@+id/etID"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
             android:layout_marginTop="8dp"
-            android:hint="Username"
+            android:layout_marginBottom="8dp"
+            android:hint="Username(email)"
             android:inputType="text" />
 
         <EditText
-            android:id="@+id/editTextPassword"
+            android:id="@+id/etPW"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
             android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
             android:fontFamily="sans-serif"
             android:hint="Password"
             android:inputType="textPassword" />
 
         <Button
-            android:id="@+id/buttonLogin"
+            android:id="@+id/btnLogin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
@@ -42,13 +42,13 @@
             android:text="Login" />
 
         <TextView
-            android:id="@+id/textViewRegister"
+            android:id="@+id/tvRegister"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:layout_marginTop="8dp"
             android:text="Dont' have an account?\nRegister Here"
-            android:textAlignment="center"
+            android:gravity="center"
             android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium" />
 
     </LinearLayout>

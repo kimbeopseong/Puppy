@@ -27,11 +27,13 @@
             android:textSize="25dp"
             android:textStyle="bold"
             android:layout_marginRight="10dp"/>
+
         <EditText
+            android:id="@+id/etInputID"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:hint="아이디를 입력해주세요"
-            android:textSize="25dp"/>
+            android:textSize="25dp" />
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
@@ -45,11 +47,13 @@
             android:textSize="25dp"
             android:textStyle="bold"
             android:layout_marginRight="10dp"/>
+
         <EditText
+            android:id="@+id/etInputPW"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:hint="비밀번호를 입력해주세요"
-            android:textSize="25dp"/>
+            android:textSize="25dp" />
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
@@ -63,11 +67,13 @@
             android:textSize="25dp"
             android:textStyle="bold"
             android:layout_marginRight="10dp"/>
+
         <EditText
+            android:id="@+id/etName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:hint="이름을 입력해주세요"
-            android:textSize="25dp"/>
+            android:textSize="25dp" />
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
@@ -81,11 +87,13 @@
             android:textSize="25dp"
             android:textStyle="bold"
             android:layout_marginRight="10dp"/>
+
         <EditText
+            android:id="@+id/etBirth"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:hint="생년월일 6자리"
-            android:textSize="25dp"/>
+            android:textSize="25dp" />
     </LinearLayout>
     <RadioGroup
         android:layout_width="match_parent"
@@ -93,13 +101,18 @@
         android:orientation="horizontal"
         android:gravity="center"
         android:layout_marginTop="20dp">
+
         <RadioButton
+            android:id="@+id/rbtnMale"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:checked="true"
             android:text="남성"
             android:textSize="25dp"
             android:textStyle="bold" />
+
         <RadioButton
+            android:id="@+id/rbtnFemale"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="여성"

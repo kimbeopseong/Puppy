@@ -18,22 +18,14 @@ import com.example.puppy.R;
 
 public class HomeFragment extends ListFragment {
 
-    ListViewAdapter adapter;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
-        adapter= new ListViewAdapter();
-        setListAdapter(adapter);
-
-        adapter.addItem(ContextCompat.getDrawable(getActivity(), R.drawable.ic_face_black_24dp),
-                "나폴레옹",14);
-
-        adapter.addItem(ContextCompat.getDrawable(getActivity(), R.drawable.ic_face_black_24dp),
-                "세종대왕",12);
-        adapter.addItem(ContextCompat.getDrawable(getActivity(), R.drawable.ic_face_black_24dp),
-                "징기스칸",11);
-
         return super.onCreateView(inflater,container,savedInstanceState);
+    }
+
+    public void addCat(){
+
     }
 }
