@@ -4,4 +4,9 @@
     <string name="title_camera">Camera</string>
     <string name="title_list">List</string>
     <string name="title_plus">Plus</string>
+    <string name="email">Email...</string>
+    <string name="password">Password...</string>
+    <string name="message">Message...</string>
+    <string name="remeber">로그인 정보 기억하기</string>
+    <string name="login">Login</string>
 </resources>

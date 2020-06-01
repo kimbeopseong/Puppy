@@ -8,9 +8,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
 import com.example.puppy.Cat;
+import com.example.puppy.PicassoTransformations;
 import com.example.puppy.R;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -38,8 +39,11 @@ public class CatAdapter extends RecyclerView.Adapter<CatAdapter.CatViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull CatViewHolder holder, int position) {
-        Glide.with(holder.itemView)
+        PicassoTransformations.targetWidth=70;
+        Picasso.get()
                 .load(arrayList.get(position).getProfile())
+                .placeholder(R.drawable.default_profile_image)
+                .error(R.drawable.default_profile_image)
                 .into(holder.ivCat);
         holder.tvCName.setText(arrayList.get(position).getCatName());
         holder.tvCAge.setText(arrayList.get(position).getCatAge());
