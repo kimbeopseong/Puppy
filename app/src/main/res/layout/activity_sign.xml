@@ -94,19 +94,25 @@
             android:id="@+id/spYear"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:text = "생년"
+            android:entries="@array/year"/>
 
         <Spinner
             android:id="@+id/spMonth"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:text = "월"
+            android:entries="@array/month"/>/>
 
         <Spinner
             android:id="@+id/spDate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            android:text = "일"
+            android:layout_weight="1"
+            android:entries="@array/day"/>/>
 
     </LinearLayout>
     <RadioGroup

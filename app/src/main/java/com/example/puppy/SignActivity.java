@@ -7,15 +7,18 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.common.base.Splitter;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -27,12 +30,11 @@ import java.util.Map;
 
 public class SignActivity extends AppCompatActivity {
     Button btnSignup;
-    EditText etInputID;
-    EditText etInputPW;
-    EditText etName;
-    RadioButton rbtnMale;
-    RadioButton rbtnFemale;
+    EditText etInputID, etInputPW, etName;
+    RadioButton rbtnMale, rbtnFemale;
+    Spinner spYear, spMonth, spDate;
     int Sex;
+    String Year="0000", Month="00", Date="00";
 
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     private FirebaseAuth mAuth;
@@ -49,6 +51,37 @@ public class SignActivity extends AppCompatActivity {
         etInputPW = (EditText)findViewById(R.id.etInputPW);
         etName = (EditText)findViewById(R.id.etName);
         btnSignup=(Button)findViewById(R.id.btnSignup);
+        spYear = (Spinner)findViewById(R.id.spYear);
+        spMonth = (Spinner)findViewById(R.id.spMonth);
+        spDate = (Spinner)findViewById(R.id.spDate);
+
+        spYear.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                Year = (String) adapterView.getItemAtPosition(i);
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+        });
+        spMonth.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                Month = (String) adapterView.getItemAtPosition(i);
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+        });
+        spDate.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                Date = (String) adapterView.getItemAtPosition(i);
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+        });
 
         btnSignup.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -80,7 +113,7 @@ public class SignActivity extends AppCompatActivity {
                 Map<String, Object> User = new HashMap<>();
                 User.put("ID", email);
                 User.put("Name", etName.getText().toString());
-                User.put("Birthday", "1995-11-15");
+                User.put("Birthday", Year+"-"+Month+"-"+Date);
                 User.put("Sex", Sex);
 
                 // Add a new document with a generated ID
