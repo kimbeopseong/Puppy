@@ -81,7 +81,7 @@
         android:drawableTint="@color/colorPrimary"
         android:textColorHint="@color/colorPrimary"
         android:textColor="@color/colorPrimaryDark"
-        android:inputType="textPassword"
+        android:inputType="text"
         android:padding="4dp"
         android:drawableStart="@drawable/edit_profile"
         android:background="@drawable/inputs"
@@ -91,12 +91,52 @@
         android:textCursorDrawable="@drawable/pink_cursor"
         />
 
+    <TextView
+        android:gravity="center_vertical"
+        android:textSize="17sp"
+        android:id="@+id/signup_birthday"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/signup_name"
+        android:hint="@string/birthday"
+        android:drawableTint="@color/colorPrimary"
+        android:textColorHint="@color/colorPrimary"
+        android:textColor="@color/colorPrimaryDark"
+        android:padding="4dp"
+        android:drawableStart="@drawable/edit_profile"
+        android:background="@drawable/inputs"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="17dp"
+        android:layout_marginRight="17dp"
+        android:textCursorDrawable="@drawable/pink_cursor"
+        />
+
+    <RadioGroup
+        android:id="@+id/signup_radio"
+        android:gravity="center_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_below="@+id/signup_birthday">
+
+        <RadioButton
+            android:id="@+id/signup_male"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="남자"></RadioButton>
+
+        <RadioButton
+            android:id="@+id/signup_female"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="여자"></RadioButton>
+    </RadioGroup>
 
     <Button
         android:id="@+id/signup_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/signup_name"
+        android:layout_below="@+id/signup_radio"
         android:text="@string/signup"
         android:padding="4dp"
         android:layout_marginTop="10dp"

@@ -1,11 +1,13 @@
 package com.example.puppy.ui.home;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -14,6 +16,8 @@ import androidx.fragment.app.ListFragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
+import com.example.puppy.AddCatActivity;
+import com.example.puppy.MainActivity;
 import com.example.puppy.R;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -25,9 +29,5 @@ public class HomeFragment extends ListFragment {
                              ViewGroup container, Bundle savedInstanceState) {
 
         return super.onCreateView(inflater,container,savedInstanceState);
-    }
-
-    public void addCat(){
-
     }
 }

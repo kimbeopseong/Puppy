@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.Spinner;
@@ -33,7 +35,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
+import android.content.DialogInterface;
 
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
@@ -45,6 +49,7 @@ public class SignActivity extends AppCompatActivity {
     private static final String TAG = "SignActivity";
     private Button   btnSignup;
     private EditText etUserEmail, etUserPassword,etUserPasswordConfirm, etUserName;
+    private TextView tvBirthday;
     private TextView tvHavedAccount;
 
     private FirebaseAuth mAuth;
@@ -66,6 +71,7 @@ public class SignActivity extends AppCompatActivity {
         etUserPassword = (EditText)findViewById(R.id.signup_password);
         etUserPasswordConfirm=(EditText)findViewById(R.id.signup_confirm);
         etUserName=(EditText)findViewById(R.id.signup_name);
+        tvBirthday=(TextView)findViewById(R.id.signup_birthday);
 
         tvHavedAccount = (TextView)findViewById(R.id.already_have_account);
         progressDialog = new ProgressDialog(SignActivity.this);
@@ -89,10 +95,16 @@ public class SignActivity extends AppCompatActivity {
             }
         });
 
+        tvBirthday.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Dialog_DatePicker();
+            }
+        });
+
     }
 
     private void CreateNewAccount(String email, String password, String confirmPassword, final String name) {
-
 
         if (TextUtils.isEmpty(email)) {
             SweetToast.error(SignActivity.this, "Your email is required.");
@@ -199,5 +211,15 @@ public class SignActivity extends AppCompatActivity {
 
         builder.setView(view);
         builder.show();
+    }
+    private void Dialog_DatePicker() {
+        DatePickerDialog.OnDateSetListener mDateSetListener = new DatePickerDialog.OnDateSetListener() {
+            public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+                String _dateStr = year+"년 "+(monthOfYear + 1) + "월 " + dayOfMonth + "일";
+                tvBirthday.setText(_dateStr);
+            }
+        };
+        DatePickerDialog alert = new DatePickerDialog(this, R.style.MySpinnerDatePickerStyle, mDateSetListener, 1990, 0, 1);
+        alert.show();
     }
 }

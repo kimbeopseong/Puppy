@@ -1,7 +1,6 @@
 package com.example.puppy;
 
 import android.graphics.Bitmap;
-
 import com.squareup.picasso.Transformation;
 
 public class PicassoTransformations {
