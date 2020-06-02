@@ -1,153 +1,127 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".SignActivity"
-    android:orientation="vertical">
+    tools:context=".SignActivity">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="USER"
-        android:textSize="30dp"
-        android:layout_marginTop="30dp"
-        android:textStyle="bold"
-        android:layout_marginLeft="15dp"/>
-    <LinearLayout
+        android:gravity="center"
+        android:text="CREATE NEW ACCOUNT"
+        android:textColor="@color/colorPrimary"
+        android:textSize="24sp"
+        android:layout_marginTop="15dp"
+        android:id="@+id/tv_signup"
+        />
+
+    <EditText
+        android:id="@+id/signup_email"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:layout_marginTop="20dp">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="ID"
-            android:textSize="25dp"
-            android:textStyle="bold"
-            android:layout_marginRight="10dp"/>
+        android:layout_below="@+id/tv_signup"
+        android:hint="@string/email"
+        android:drawableTint="@color/colorPrimary"
+        android:textColorHint="@color/colorPrimary"
+        android:textColor="@color/colorPrimaryDark"
+        android:inputType="textEmailAddress"
+        android:background="@drawable/inputs"
+        android:padding="4dp"
+        android:drawableStart="@drawable/email"
+        android:layout_marginTop="25dp"
+        android:layout_marginLeft="17dp"
+        android:layout_marginRight="17dp"
+        android:textCursorDrawable="@drawable/pink_cursor"
+        />
 
-        <EditText
-            android:id="@+id/etInputID"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:hint="아이디를 입력해주세요"
-            android:textSize="25dp" />
-    </LinearLayout>
-    <LinearLayout
+    <EditText
+        android:id="@+id/signup_password"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:layout_marginTop="20dp">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="PW"
-            android:textSize="25dp"
-            android:textStyle="bold"
-            android:layout_marginRight="10dp"/>
-
-        <EditText
-            android:id="@+id/etInputPW"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:hint="비밀번호를 입력해주세요"
-            android:textSize="25dp" />
-    </LinearLayout>
-    <LinearLayout
+        android:layout_below="@+id/signup_email"
+        android:hint="@string/password"
+        android:drawableTint="@color/colorPrimary"
+        android:textColorHint="@color/colorPrimary"
+        android:textColor="@color/colorPrimaryDark"
+        android:inputType="textPassword"
+        android:padding="4dp"
+        android:drawableStart="@drawable/password"
+        android:background="@drawable/inputs"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="17dp"
+        android:layout_marginRight="17dp"
+        android:textCursorDrawable="@drawable/pink_cursor"
+        />
+    <EditText
+        android:id="@+id/signup_confirm"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:layout_marginTop="20dp">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="이름"
-            android:textSize="25dp"
-            android:textStyle="bold"
-            android:layout_marginRight="10dp"/>
-
-        <EditText
-            android:id="@+id/etName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:hint="이름을 입력해주세요"
-            android:textSize="25dp" />
-    </LinearLayout>
-    <LinearLayout
+        android:layout_below="@+id/signup_password"
+        android:hint="Confirm Password"
+        android:drawableTint="@color/colorPrimary"
+        android:textColorHint="@color/colorPrimary"
+        android:textColor="@color/colorPrimaryDark"
+        android:inputType="textPassword"
+        android:padding="4dp"
+        android:drawableStart="@drawable/password"
+        android:background="@drawable/inputs"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="17dp"
+        android:layout_marginRight="17dp"
+        android:textCursorDrawable="@drawable/pink_cursor"
+        />
+    <EditText
+        android:id="@+id/signup_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:layout_marginTop="20dp">
+        android:layout_below="@+id/signup_confirm"
+        android:hint="@string/name"
+        android:drawableTint="@color/colorPrimary"
+        android:textColorHint="@color/colorPrimary"
+        android:textColor="@color/colorPrimaryDark"
+        android:inputType="textPassword"
+        android:padding="4dp"
+        android:drawableStart="@drawable/edit_profile"
+        android:background="@drawable/inputs"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="17dp"
+        android:layout_marginRight="17dp"
+        android:textCursorDrawable="@drawable/pink_cursor"
+        />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="10dp"
-            android:layout_weight="1"
-            android:text="생년월일"
-            android:textSize="24dp"
-            android:textStyle="bold" />
 
-        <Spinner
-            android:id="@+id/spYear"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text = "생년"
-            android:entries="@array/year"/>
-
-        <Spinner
-            android:id="@+id/spMonth"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text = "월"
-            android:entries="@array/month"/>/>
-
-        <Spinner
-            android:id="@+id/spDate"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text = "일"
-            android:layout_weight="1"
-            android:entries="@array/day"/>/>
-
-    </LinearLayout>
-    <RadioGroup
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:layout_marginTop="20dp">
-
-        <RadioButton
-            android:id="@+id/rbtnMale"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="남성"
-            android:textSize="25dp"
-            android:textStyle="bold" />
-
-        <RadioButton
-            android:id="@+id/rbtnFemale"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="여성"
-            android:textSize="25dp"
-            android:textStyle="bold" />
-    </RadioGroup>
     <Button
-        android:id="@+id/btnSignup"
-        android:layout_width="wrap_content"
+        android:id="@+id/signup_button"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="20dp"
+        android:layout_below="@+id/signup_name"
+        android:text="@string/signup"
+        android:padding="4dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="17dp"
+        android:layout_marginRight="17dp"
+        android:textSize="24sp"
+        android:textAllCaps="false"
+        android:textColor="@color/colorPrimary"
+        android:background="@drawable/buttons"
+        />
+
+    <TextView
+        android:id="@+id/already_have_account"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/signup_button"
+        android:layout_alignParentStart="true"
+        android:text="@string/already_have_account"
+        android:layout_marginTop="2dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="23dp"
+        android:textColor="@color/colorPrimaryDark"
+        android:textAlignment="center"
+        android:textSize="17sp"
         android:textStyle="bold"
-        android:text="가입완료"
-        android:textSize="20dp"/>
+        />
 
-
-</LinearLayout>
+</RelativeLayout>
