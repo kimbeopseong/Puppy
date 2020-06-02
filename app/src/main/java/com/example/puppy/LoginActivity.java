@@ -41,7 +41,6 @@ public class LoginActivity extends AppCompatActivity {
     TextView tv_signup;
     private FirebaseAuth mLogin;
 
-    private DatabaseReference userRef;
     private ProgressDialog progressDialog;
     private FirebaseFirestore db;
 
@@ -65,10 +64,7 @@ public class LoginActivity extends AppCompatActivity {
 
         mLogin=FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
-
-        userRef = FirebaseDatabase.getInstance().getReference().child("Users");
-
-
+        
         et_id=(EditText)findViewById(R.id.etId);
         et_password=(EditText)findViewById(R.id.etPassword);
         checkBox = (CheckBox)findViewById(R.id.checkBox);

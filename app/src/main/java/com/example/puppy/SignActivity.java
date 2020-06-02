@@ -47,8 +47,6 @@ public class SignActivity extends AppCompatActivity {
     private EditText etUserEmail, etUserPassword,etUserPasswordConfirm, etUserName;
     private TextView tvHavedAccount;
 
-
-    private DatabaseReference rootRef;
     private FirebaseAuth mAuth;
     private ProgressDialog progressDialog;
     private FirebaseUser currentUser;
@@ -61,7 +59,6 @@ public class SignActivity extends AppCompatActivity {
         setContentView(R.layout.activity_sign);
 
         mAuth=FirebaseAuth.getInstance();
-        rootRef = FirebaseDatabase.getInstance().getReference();
         db = FirebaseFirestore.getInstance();
 
         btnSignup = (Button)findViewById(R.id.signup_button);
