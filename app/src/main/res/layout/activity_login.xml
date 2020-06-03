@@ -24,7 +24,7 @@
                 android:layout_height="100dp"
                 android:layout_marginTop="50dp"
                 android:gravity="center"
-                android:text="POPPY"
+                android:text="POOPY"
                 android:textColor="#FFC4E1"
                 android:textStyle="bold"
                 android:textSize="30sp" />

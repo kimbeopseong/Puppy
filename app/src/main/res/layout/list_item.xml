@@ -4,45 +4,97 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <ImageView
-        android:id="@+id/daily_pictiure"
-        android:layout_width="match_parent"
-        android:layout_height="75dp"
-        android:layout_weight="3"
-        tools:srcCompat="@tools:sample/avatars" />
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:layout_marginBottom="4px">
 
-        <TextView
-            android:id="@+id/daily_date"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:orientation="horizontal"
             android:layout_weight="1"
-            android:textSize="20dp"
-            android:gravity="center_vertical"
-            android:text=""/>
+            android:layout_marginBottom="2px">
 
-        <TextView
-            android:id="@+id/daily_stat"
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="4"
+                android:textSize="20dp"
+                android:gravity="center"
+                android:text="Date"
+                android:layout_marginRight="2px"
+                android:background="#FFEEFB"/>
+
+            <TextView
+                android:id="@+id/daily_date"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:textSize="20dp"
+                android:gravity="center_vertical"
+                android:background="#FFEEFB"
+                android:text=""/>
+
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:orientation="horizontal"
             android:layout_weight="1"
-            android:textSize="20dp"
-            android:gravity="center_vertical"
-            android:text=""/>
+            android:layout_marginBottom="2px">
 
-        <TextView
-            android:id="@+id/daily_lv"
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="4"
+                android:textSize="20dp"
+                android:gravity="center"
+                android:text="Status"
+                android:layout_marginRight="2px"
+                android:background="#FFEEFB"/>
+
+            <TextView
+                android:id="@+id/daily_stat"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:textSize="20dp"
+                android:gravity="center_vertical"
+                android:background="#FFEEFB"
+                android:text=""/>
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:textSize="20dp"
-            android:gravity="center_vertical"
-            android:text=""/>
+            android:orientation="horizontal"
+            android:layout_weight="1">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="4"
+                android:textSize="20dp"
+                android:gravity="center"
+                android:text="Lv."
+                android:layout_marginRight="2px"
+                android:background="#FFEEFB"/>
+
+            <TextView
+                android:id="@+id/daily_lv"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:textSize="20dp"
+                android:gravity="center_vertical"
+                android:background="#FFEEFB"
+                android:text=""/>
+
+        </LinearLayout>
 
     </LinearLayout>
 
