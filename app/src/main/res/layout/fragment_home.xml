@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/relativeLayout"
@@ -20,32 +20,25 @@
 
     </androidx.recyclerview.widget.RecyclerView>
 
-    <LinearLayout
+    <ImageView
+        android:id="@+id/ivAddCat"
+        android:layout_width="match_parent"
+        android:layout_height="60sp"
+        android:layout_below="@id/rvCat"
+        android:padding="10dp"
+        app:srcCompat="@drawable/ic_etc"
+        tools:layout_editor_absoluteX="141dp"
+        tools:layout_editor_absoluteY="279dp" />
+
+    <TextView
+        android:id="@+id/tvAddCat"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_below="@id/ivAddCat"
+        android:gravity="center|center_horizontal|center_vertical"
+        android:text="Push to Add Cat"
+        android:textSize="20sp"
+        android:textColor="#D2C4FF"
+        android:layout_marginTop="5sp"/>
 
-        <ImageView
-            android:id="@+id/ivAddCat"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:layout_gravity="center"
-            android:padding="10dp"
-            app:srcCompat="@drawable/ic_etc"
-            tools:layout_editor_absoluteX="141dp"
-            tools:layout_editor_absoluteY="279dp" />
-
-        <TextView
-            android:id="@+id/tvAddCat"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center|center_horizontal|center_vertical"
-            android:text="고양이 추가"
-            android:textColor="#000000"
-            android:textSize="20dp"
-            android:textStyle="bold" />
-
-    </LinearLayout>
-
-
-</LinearLayout>
+</RelativeLayout>

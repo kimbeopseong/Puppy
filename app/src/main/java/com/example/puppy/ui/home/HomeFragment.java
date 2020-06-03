@@ -1,33 +1,50 @@
 package com.example.puppy.ui.home;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+import android.widget.ImageView;
 
-import androidx.annotation.MainThread;
-import androidx.annotation.Nullable;
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.ListFragment;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.puppy.AddCatActivity;
-import com.example.puppy.MainActivity;
+import com.example.puppy.Cat;
 import com.example.puppy.R;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-public class HomeFragment extends ListFragment {
+import java.util.ArrayList;
+
+public class HomeFragment extends Fragment {
+    private RecyclerView recyclerView;
+    private ImageView ivAddCat;
+
+    private RecyclerView.Adapter adapter;
+    private RecyclerView.LayoutManager layoutManager;
+    private ArrayList<Cat> arrayList;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
+
     public HomeFragment(){ }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
+        View root = inflater.inflate(R.layout.fragment_home, container, false);
+        recyclerView = (RecyclerView)root.findViewById(R.id.rvCat);
+        ivAddCat = (ImageView)root.findViewById(R.id.ivAddCat);
+        ivAddCat.setColorFilter(Color.parseColor("#D2C4FF"), PorterDuff.Mode.SRC_IN);
+        ivAddCat.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getActivity(), AddCatActivity.class);
+                startActivity(intent);
+            }
+        });
 
-        return super.onCreateView(inflater,container,savedInstanceState);
+        return root;
     }
 }

@@ -103,7 +103,7 @@
         android:textColorHint="@color/colorPrimary"
         android:textColor="@color/colorPrimaryDark"
         android:padding="4dp"
-        android:drawableStart="@drawable/edit_profile"
+        android:drawableStart="@drawable/edit_status"
         android:background="@drawable/inputs"
         android:layout_marginTop="10dp"
         android:layout_marginLeft="17dp"
@@ -113,23 +113,39 @@
 
     <RadioGroup
         android:id="@+id/signup_radio"
-        android:gravity="center_horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/signup_birthday"
+        android:layout_marginLeft="17dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="17dp"
+        android:drawableTint="@color/colorPrimary"
+        android:gravity="center_horizontal"
         android:orientation="horizontal"
-        android:layout_below="@+id/signup_birthday">
+        android:padding="4sp">
 
         <RadioButton
             android:id="@+id/signup_male"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:text="남자"></RadioButton>
+            android:background="@drawable/inputs"
+            android:checked="true"
+            android:padding="10sp"
+            android:text="남자"
+            android:layout_marginRight="17dp"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="17sp"></RadioButton>
 
         <RadioButton
             android:id="@+id/signup_female"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:text="여자"></RadioButton>
+            android:background="@drawable/inputs"
+            android:padding="10sp"
+            android:text="여자"
+            android:layout_marginLeft="17dp"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="17sp"></RadioButton>
     </RadioGroup>
 
     <Button

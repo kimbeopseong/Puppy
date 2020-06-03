@@ -51,7 +51,7 @@ public class SignActivity extends AppCompatActivity {
     private EditText etUserEmail, etUserPassword,etUserPasswordConfirm, etUserName;
     private TextView tvBirthday;
     private TextView tvHavedAccount;
-
+    private RadioButton rbtnMale, rbtnFemale;
     private FirebaseAuth mAuth;
     private ProgressDialog progressDialog;
     private FirebaseUser currentUser;
@@ -72,6 +72,8 @@ public class SignActivity extends AppCompatActivity {
         etUserPasswordConfirm=(EditText)findViewById(R.id.signup_confirm);
         etUserName=(EditText)findViewById(R.id.signup_name);
         tvBirthday=(TextView)findViewById(R.id.signup_birthday);
+        rbtnMale=(RadioButton)findViewById(R.id.signup_male);
+        rbtnFemale=(RadioButton)findViewById(R.id.signup_female);
 
         tvHavedAccount = (TextView)findViewById(R.id.already_have_account);
         progressDialog = new ProgressDialog(SignActivity.this);
@@ -84,7 +86,13 @@ public class SignActivity extends AppCompatActivity {
                 String password = etUserPassword.getText().toString();
                 String confirmPassword=etUserPasswordConfirm.getText().toString();
                 String name=etUserName.getText().toString();
-                CreateNewAccount(email, password, confirmPassword, name);
+                String birthday=tvBirthday.getText().toString();
+                String sex = null;
+                if(rbtnMale.isChecked())
+                    sex="남자";
+                else if(rbtnFemale.isChecked())
+                    sex="여자";
+                CreateNewAccount(email, password, confirmPassword, name, birthday, sex);
             }
         });
 
@@ -104,8 +112,7 @@ public class SignActivity extends AppCompatActivity {
 
     }
 
-    private void CreateNewAccount(String email, String password, String confirmPassword, final String name) {
-
+    private void CreateNewAccount(String email, String password, String confirmPassword, final String name, final String birthday, final String sex) {
         if (TextUtils.isEmpty(email)) {
             SweetToast.error(SignActivity.this, "Your email is required.");
         } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
@@ -120,7 +127,10 @@ public class SignActivity extends AppCompatActivity {
             SweetToast.error(SignActivity.this, "Your password don't match with your confirm password");
         } else if (TextUtils.isEmpty(name)) {
             SweetToast.warning(SignActivity.this, "Please write your name");
-        } else {
+        } else if (TextUtils.isEmpty(birthday)){
+            SweetToast.warning(SignActivity.this, "Please write your birthday");
+        }
+        else {
 
             mAuth.createUserWithEmailAndPassword(email, password)
                     .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
@@ -131,6 +141,8 @@ public class SignActivity extends AppCompatActivity {
                                 String currentUserID = mAuth.getCurrentUser().getUid();
 
                                 Userinfo.put("name", name);
+                                Userinfo.put("birthday", birthday);
+                                Userinfo.put("sex", sex);
                                 Userinfo.put("verified", "false");
 
                                 db.collection("Users").document(currentUserID).set(Userinfo, SetOptions.merge())
@@ -146,38 +158,30 @@ public class SignActivity extends AppCompatActivity {
                                                                     @Override
                                                                     public void onComplete(@NonNull Task<Void> task) {
                                                                         if (task.isSuccessful()) {
-
                                                                             registerSuccessPopUp();
-
                                                                             // LAUNCH activity after certain time period
                                                                             new Timer().schedule(new TimerTask() {
                                                                                 public void run() {
                                                                                     SignActivity.this.runOnUiThread(new Runnable() {
                                                                                         public void run() {
                                                                                             mAuth.signOut();
-
                                                                                             Intent mainIntent = new Intent(SignActivity.this, LoginActivity.class);
                                                                                             mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                                                                             startActivity(mainIntent);
                                                                                             finish();
 
                                                                                             SweetToast.info(SignActivity.this, "Please check your email & verify.");
-
                                                                                         }
                                                                                     });
                                                                                 }
                                                                             }, 8000);
-
-
                                                                         } else {
                                                                             mAuth.signOut();
                                                                         }
                                                                     }
                                                                 });
                                                     }
-
                                                 }
-
                                             }
                                         });
 
@@ -212,6 +216,7 @@ public class SignActivity extends AppCompatActivity {
         builder.setView(view);
         builder.show();
     }
+    //생년월일 입력용 다이얼로그
     private void Dialog_DatePicker() {
         DatePickerDialog.OnDateSetListener mDateSetListener = new DatePickerDialog.OnDateSetListener() {
             public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {

@@ -6,152 +6,125 @@
     android:layout_height="match_parent"
     tools:context=".AddCatActivity">
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/tvAddCatTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:orientation="vertical"
-        android:padding="10dp">
+        android:gravity="center"
+        android:text="ADD NEW CAT"
+        android:textSize="24sp"
+        android:layout_marginTop="15dp"
+        android:textColor="@color/colorPrimary" />
 
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+    <EditText
+        android:id="@+id/etCatName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:layout_below="@+id/tvAddCatTitle"
+        android:hint="@string/cname"
+        android:drawableTint="@color/colorPrimary"
+        android:textColorHint="@color/colorPrimary"
+        android:textColor="@color/colorPrimaryDark"
+        android:inputType="text"
+        android:background="@drawable/inputs"
+        android:drawableStart="@drawable/edit_pet"
+        android:layout_marginTop="25dp"
+        android:layout_marginLeft="17dp"
+        android:layout_marginRight="17dp"
+        android:textCursorDrawable="@drawable/pink_cursor"/>
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_weight="4"
-                android:gravity="center"
-                android:text="이름"
-                android:textColor="#000000"
-                android:textSize="18dp" />
+    <EditText
+        android:id="@+id/etCatAge"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:layout_below="@+id/etCatName"
+        android:hint="@string/cage"
+        android:drawableTint="@color/colorPrimary"
+        android:textColorHint="@color/colorPrimary"
+        android:textColor="@color/colorPrimaryDark"
+        android:inputType="number"
+        android:background="@drawable/inputs"
+        android:drawableStart="@drawable/edit_pet"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="17dp"
+        android:layout_marginRight="17dp"
+        android:textCursorDrawable="@drawable/pink_cursor"/>
 
-            <EditText
-                android:id="@+id/etCatName"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"
-                android:layout_weight="1"
-                android:hint="고양이 이름을 입력해주세요"
-                android:inputType="text"
-                android:textSize="16dp" />
-        </LinearLayout>
+    <EditText
+        android:id="@+id/etCatSpecies"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:layout_below="@+id/etCatAge"
+        android:hint="@string/cspecies"
+        android:drawableTint="@color/colorPrimary"
+        android:textColorHint="@color/colorPrimary"
+        android:textColor="@color/colorPrimaryDark"
+        android:inputType="text"
+        android:background="@drawable/inputs"
+        android:drawableStart="@drawable/edit_pet"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="17dp"
+        android:layout_marginRight="17dp"
+        android:textCursorDrawable="@drawable/pink_cursor"/>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_weight="4"
-                android:gravity="center"
-                android:text="나이"
-                android:textColor="#000000"
-                android:textSize="18dp" />
+    <RadioGroup
+        android:id="@+id/add_catRadio"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/etCatSpecies"
+        android:layout_marginLeft="17dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginRight="17dp"
+        android:drawableTint="@color/colorPrimary"
+        android:gravity="center_horizontal"
+        android:padding="4sp"
+        android:orientation="horizontal">
 
-            <EditText
-                android:id="@+id/etCatAge"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"
-                android:layout_weight="1"
-                android:fontFamily="sans-serif"
-                android:hint="고양이 나이를 입력해주세요"
-                android:inputType="number"
-                android:textSize="16dp" />
-
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_weight="4"
-                android:gravity="center"
-                android:text="품종"
-                android:textColor="#000000"
-                android:textSize="18dp" />
-
-            <EditText
-                android:id="@+id/etCatSpecies"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"
-                android:layout_weight="1"
-                android:fontFamily="sans-serif"
-                android:hint="고양이 종을 입력해주세요"
-                android:inputType="text"
-                android:textSize="16dp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
+        <RadioButton
+            android:id="@+id/rbtnCMale"
+            android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:orientation="horizontal">
+            android:background="@drawable/inputs"
+            android:checked="true"
+            android:padding="10sp"
+            android:layout_marginRight="17dp"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="17sp"
+            android:text="수컷" />
 
-            <TextView
-                android:id="@+id/textView3"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_weight="4"
-                android:gravity="center"
-                android:text="성별"
-                android:textColor="#000000"
-                android:textSize="18dp" />
+        <RadioButton
+            android:id="@+id/rbtnCFemale"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@drawable/inputs"
+            android:padding="10sp"
+            android:layout_marginRight="17dp"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="17sp"
+            android:gravity="center"
+            android:text="암컷" />
+    </RadioGroup>
 
-            <RadioGroup
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
 
-                android:orientation="horizontal">
-
-                <RadioButton
-                    android:id="@+id/rbtnCMale"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="8dp"
-                    android:checked="true"
-                    android:gravity="center"
-                    android:text="수컷"
-                    android:textSize="16dp" />
-
-                <RadioButton
-                    android:id="@+id/rbtnCFemale"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="8dp"
-                    android:gravity="center"
-                    android:text="암컷"
-                    android:textSize="16dp" />
-            </RadioGroup>
-
-        </LinearLayout>
-
-        <Button
-            android:id="@+id/btnAddCat"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            android:text="ADD CAT" />
-
-    </LinearLayout>
+    <Button
+        android:id="@+id/btnAddCat"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="ADD CAT"
+        android:padding="4dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="17dp"
+        android:layout_marginRight="17dp"
+        android:textSize="24sp"
+        android:textAllCaps="false"
+        android:textColor="@color/colorPrimary"
+        android:background="@drawable/buttons"
+        android:layout_below="@+id/add_catRadio"
+        />
 
 </RelativeLayout>

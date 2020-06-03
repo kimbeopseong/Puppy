@@ -14,7 +14,7 @@ import android.view.ViewGroup;
 
 import com.example.puppy.R;
 
-public class ListFragment extends Fragment {
+public class listFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
