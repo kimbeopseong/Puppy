@@ -51,7 +51,6 @@ public class HomeFragment extends Fragment {
 
     String petUri,petName,petSex,petAge,petSpec;
 
-
     public HomeFragment(){ }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -64,9 +63,7 @@ public class HomeFragment extends Fragment {
 
         catsList=(RecyclerView)privateCatView.findViewById(R.id.rvCat);
         catsList.setLayoutManager(new LinearLayoutManager(getContext()));
-
         addCat=(ImageView) privateCatView.findViewById(R.id.ivAddCat);
-
         addCat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -125,14 +122,15 @@ public class HomeFragment extends Fragment {
                                                         });
                                             }
                                             holder.petname.setText(petName);
-                                            holder.petage.setText(petAge);
+                                            holder.petage.setText(petAge+"살");
                                             holder.petspec.setText(petSpec);
                                             holder.petsex.setText(petSex);
 
                                             holder.itemView.setOnClickListener(new View.OnClickListener() {
                                                 @Override
                                                 public void onClick(View v) {
-                                                    Intent setting=new Intent(getActivity(), CatSetActivity.class);
+                                                    Intent setting =new Intent(getActivity(), CatSetActivity.class);
+                                                    setting.putExtra("cat_document_id", cat_uid);
                                                     startActivity(setting);
                                                 }
                                             });

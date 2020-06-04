@@ -127,13 +127,15 @@ public class AddCatActivity extends AppCompatActivity {
     }
     private void createNewCat(String catName, int catAge ,String catSpecies, String catSex) {
         if (TextUtils.isEmpty(catName)) {
-            SweetToast.error(AddCatActivity.this, "Your Cat's Name is required.");
+            SweetToast.error(AddCatActivity.this, "Your cat's name is required.");
         } else if (catAge == 0) {
-            SweetToast.error(AddCatActivity.this, "Please fill this password field");
-        } else if (TextUtils.isEmpty(catSpecies)) {
-            SweetToast.warning(AddCatActivity.this, "Please retype in password field");
+            SweetToast.error(AddCatActivity.this, "Your cat's age is required.");
+        } else if (catAge > 25) {
+            SweetToast.error(AddCatActivity.this, "You fill in wrong age.");
+        }else if (TextUtils.isEmpty(catSpecies)) {
+            SweetToast.warning(AddCatActivity.this, "Your cat's Species is required.");
         } else if (TextUtils.isEmpty(catSex)) {
-            SweetToast.warning(AddCatActivity.this, "Please write your name");
+            SweetToast.warning(AddCatActivity.this, "Select your cat's sex");
         } else {
             final Map<String, Object> user = new HashMap<>();
 

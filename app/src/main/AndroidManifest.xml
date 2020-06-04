@@ -15,8 +15,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".CatSetActivity"></activity>
-        <activity android:name=".AddCatActivity" />
+        <activity android:name=".CatSetActivity"
+            android:label="@string/title_Update"></activity>
+        <activity android:name=".AddCatActivity"
+            android:label="@string/title_Add"/>
         <activity android:name=".SignActivity" />
         <activity
             android:name=".SplashActivity"
