@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -157,13 +158,13 @@ public class CatSetActivity extends AppCompatActivity {
                     catSex="수컷";
                 else if(rbtnCFemale.isChecked())
                     catSex="암컷";
-                updateCat(catName, catAge, catSpecies, catSex);
+                updateCat(catName, catAge, catSpecies, catSex, pet_profile_download_url);
                 Intent end_update = new Intent(CatSetActivity.this, MainActivity.class);
                 startActivity(end_update);
             }
         });
     }
-    private void updateCat(String catName, int catAge, String catSpecies, String catSex){
+    private void updateCat(String catName, int catAge, String catSpecies, String catSex, String catPhoto){
         if (TextUtils.isEmpty(catName)) {
             SweetToast.error(CatSetActivity.this, "Your cat's name is required.");
         } else if (catAge == 0) {
@@ -174,7 +175,8 @@ public class CatSetActivity extends AppCompatActivity {
             SweetToast.warning(CatSetActivity.this, "Your cat's Species is required.");
         } else if (TextUtils.isEmpty(catSex)) {
             SweetToast.warning(CatSetActivity.this, "Select your cat's sex");
-        } else {
+        }
+        else {
 
             Map<String, Object> update = new HashMap<>();
             update.put("p_name", catName);
@@ -182,6 +184,7 @@ public class CatSetActivity extends AppCompatActivity {
             update.put("p_species", catSpecies);
             update.put("p_age", catAge);
             update.put("p_ID",currentUserID);
+            update.put("p_uri", pet_profile_download_url);
 
             // Add a new document with a generated ID
             db.collection("Pet")
@@ -222,16 +225,6 @@ public class CatSetActivity extends AppCompatActivity {
                 public void onComplete(@NonNull Task<Uri> task) {
                     if(task.isSuccessful()){
                         pet_profile_download_url=task.getResult().toString();
-
-                        HashMap<String, Object> update_pet_data=new HashMap<>();
-                        update_pet_data.put("p_uri",pet_profile_download_url);
-
-                        db.collection("Pet").document(document_id).set(update_pet_data, SetOptions.merge()).addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                            }
-                        });
-
                     }
                 }
             });
