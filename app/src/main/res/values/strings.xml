@@ -13,7 +13,8 @@
     <string name="cage">Cat\'s age</string>
     <string name="cspecies">Cat\'s species</string>
     <string name="remeber">로그인 정보 기억하기</string>
-    <string name="login">Login</string>'<string name="already_have_account">Already have an account?</string>
+    <string name="login">Login</string>'
+    <string name="already_have_account">Already have an account?</string>
     <string name="signup">Create Account</string>
     <string name="register_success_popup">Registered successfully.\nVerification email has been sent.\nPlease verify email.</string>
 

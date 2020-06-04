@@ -16,13 +16,24 @@
         android:layout_marginTop="15dp"
         android:textColor="@color/colorPrimary" />
 
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:layout_width="170dp"
+        android:layout_height="170dp"
+        android:layout_below="@+id/tvAddCatTitle"
+        android:id="@+id/cvCat"
+        android:src="@drawable/default_profile_image"
+        app:civ_border_width="1.2dp"
+        app:civ_border_overlay="true"
+        android:layout_marginTop="10dp"
+        android:layout_centerHorizontal="true"/>
+
 
     <EditText
         android:id="@+id/etCatName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="20sp"
-        android:layout_below="@+id/tvAddCatTitle"
+        android:layout_below="@+id/cvCat"
         android:hint="@string/cname"
         android:drawableTint="@color/colorPrimary"
         android:textColorHint="@color/colorPrimary"
