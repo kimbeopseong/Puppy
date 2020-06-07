@@ -18,10 +18,22 @@
         tools:layout="@layout/fragment_cam" />
 
     <fragment
+        android:id="@+id/navigation_cat_choice_camera"
+        android:name="com.example.puppy.ui.camera.CameraCatChoice"
+        android:label="cam_choice"
+        tools:layout="@layout/cat_choice_fragment" />
+
+    <fragment
         android:id="@+id/navigation_list"
         android:name="com.example.puppy.ui.list.RecordListFragment"
         android:label="@string/title_list"
         tools:layout="@layout/fragment_list" />
+
+    <fragment
+        android:id="@+id/navigation_cat_choice_list"
+        android:name="com.example.puppy.ui.list.RecordCatChoice"
+        android:label="list_choice"
+        tools:layout="@layout/cat_choice_fragment" />
 
     <fragment
         android:id="@+id/navigation_plus"

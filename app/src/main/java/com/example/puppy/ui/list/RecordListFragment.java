@@ -8,6 +8,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.paging.PagedList;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -20,12 +22,13 @@ import com.firebase.ui.firestore.SnapshotParser;
 import com.firebase.ui.firestore.paging.FirestorePagingOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
 
-public class RecordListFragment extends Fragment implements RecycleAdapter.OnListItemClick {
+public class RecordListFragment extends AppCompatActivity implements RecycleAdapter.OnListItemClick {
 
     private RecyclerView recyclerView;
     private RecycleAdapter adapter;
@@ -33,30 +36,38 @@ public class RecordListFragment extends Fragment implements RecycleAdapter.OnLis
 
     private FirebaseAuth mAuth;
     private String currentUID;
+    private String currentPID;
 
     FirebaseFirestore db;
+
     CollectionReference poopData;
     Query query;
 
+    public RecordListFragment(){}
+
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_list, container, false);
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.fragment_list);
 
         mAuth = FirebaseAuth.getInstance();
         currentUID = mAuth.getCurrentUser().getUid();
 
+        Intent intent = getIntent();
+        currentPID = intent.getStringExtra("pid");
+
         db = FirebaseFirestore.getInstance();
-        poopData = db.collection("PoopData");
+        poopData = db.collection("Pet").document(currentPID).collection("PoopData");
 
         //Query for read the dataset
-        query = poopData.whereEqualTo("UID",currentUID);
-
+//        query = pet.whereEqualTo("UID",currentUID);
+//        query = poopData;
         PagedList.Config config = new PagedList.Config.Builder().setInitialLoadSizeHint(10).setPageSize(3).build();
 
         //RecyclerOptions
         FirestorePagingOptions<RecordItem> options = new FirestorePagingOptions.Builder<RecordItem>()
                 .setLifecycleOwner(this)
-                .setQuery(query, config, new SnapshotParser<RecordItem>() {
+                .setQuery(poopData, config, new SnapshotParser<RecordItem>() {
                     @NonNull
                     @Override
                     public RecordItem parseSnapshot(@NonNull DocumentSnapshot snapshot) {
@@ -70,21 +81,21 @@ public class RecordListFragment extends Fragment implements RecycleAdapter.OnLis
 
         adapter = new RecycleAdapter(options, this);
 
-        recyclerView = (RecyclerView) view.findViewById(R.id.recycler);
+        recyclerView = (RecyclerView) findViewById(R.id.recycler);
         recyclerView.setHasFixedSize(true);
-        layoutManager = new LinearLayoutManager(getActivity());
+        layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
         recyclerView.scrollToPosition(0);
 
-        return view;
     }
 
     @Override
     public void onItemClick(DocumentSnapshot snapshot, int position) {
         Log.d("ITEM_CLICK", "Clicked an item: " + position + ", id:" + snapshot.getId());
-        Intent intent = new Intent(this.getContext(), ResultActivity.class);
+        Intent intent = new Intent(this, ResultActivity.class);
         intent.putExtra("itemId", snapshot.getId());
+        intent.putExtra("pid", currentPID);
         startActivity(intent);
     }
 
