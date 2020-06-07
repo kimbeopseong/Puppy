@@ -28,6 +28,7 @@ public class ResultActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
     private String currentUID;
+    private String currentPID;
     private String itemId = null;
 
     FirebaseFirestore db;
@@ -35,7 +36,6 @@ public class ResultActivity extends AppCompatActivity {
     TextView res_date, res_stat, res_lv;
     CollectionReference poopData;
     DocumentReference docRef;
-    Query query;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -52,9 +52,10 @@ public class ResultActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         itemId = intent.getStringExtra("itemId");
+        currentPID = intent.getStringExtra("pid");
 
         db = FirebaseFirestore.getInstance();
-        poopData = db.collection("PoopData");
+        poopData = db.collection("Pet").document(currentPID).collection("PoopData");
         docRef = poopData.document(itemId);
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -70,20 +71,6 @@ public class ResultActivity extends AppCompatActivity {
             }
         });
 //      기록할 때, 고양이의 이름은 따로 클래스에 저장되도록 해서 쿼리에서 이름 불러올 수 있도록 하기.
-//        query = poopData.whereEqualTo("UID",currentUID).whereEqualTo("p_name", "콩순이");
-//        query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//            @Override
-//            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-//                if (task.isSuccessful()){
-//                    for(QueryDocumentSnapshot document : task.getResult()){
-//                        res_date.setText(document.get("date").toString());
-//                        res_stat.setText(document.get("stat").toString());
-//                        res_lv.setText(document.get("lv").toString());
-//                    }
-//                }
-//            }
-//        });
-
         Button btn_resConfirm = (Button) findViewById(R.id.res_btn_confirm);
         btn_resConfirm.setOnClickListener((new View.OnClickListener() {
             @Override
@@ -91,6 +78,5 @@ public class ResultActivity extends AppCompatActivity {
                 onBackPressed();
             }
         }));
-
     }
 }

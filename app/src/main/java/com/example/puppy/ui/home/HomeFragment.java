@@ -54,6 +54,10 @@ public class HomeFragment extends Fragment {
 
     public HomeFragment(){ }
 
+    public static HomeFragment newInstance(){
+        return new HomeFragment();
+    }
+
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         db=FirebaseFirestore.getInstance();
