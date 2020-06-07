@@ -89,12 +89,6 @@ public class RecordCatChoice extends Fragment implements RecordCatChoiceAdapter.
         return choice_recordView;
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-
-    }
-
     public class ItemDecoration extends RecyclerView.ItemDecoration{
         private int spanCount;
         private int spacing;

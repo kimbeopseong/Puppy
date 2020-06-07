@@ -108,6 +108,6 @@
             android:layout_marginTop="10dp"
             android:text="확인"
             android:textColor="#FFFFFF"
-            android:background="#1E9BFF"/>
+            android:background="@color/colorPrimaryLight"/>
 
 </LinearLayout>
