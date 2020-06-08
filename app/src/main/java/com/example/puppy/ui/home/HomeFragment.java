@@ -1,13 +1,10 @@
 package com.example.puppy.ui.home;
 
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -20,7 +17,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.puppy.AddCatActivity;
 import com.example.puppy.Cat;
 import com.example.puppy.CatSetActivity;
-import com.example.puppy.PicassoTransformations;
 import com.example.puppy.R;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
@@ -35,8 +31,6 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
-
-import java.util.ArrayList;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -103,12 +97,11 @@ public class HomeFragment extends Fragment {
                                             petSpec=task.getResult().get("p_species").toString();
                                             if(task.getResult().contains("p_uri")){
                                                 petUri=task.getResult().get("p_uri").toString();
-                                                PicassoTransformations.targetWidth=70;
                                                 Picasso.get().load(petUri)
                                                         .networkPolicy(NetworkPolicy.OFFLINE)
                                                         .placeholder(R.drawable.default_profile_image)
                                                         .error(R.drawable.default_profile_image)
-                                                        .transform(PicassoTransformations.resizeTransformation)
+                                                        .resize(0,90)
                                                         .into(holder.ivPet, new Callback() {
                                                             @Override
                                                             public void onSuccess() {
@@ -116,11 +109,10 @@ public class HomeFragment extends Fragment {
 
                                                             @Override
                                                             public void onError(Exception e) {
-                                                                PicassoTransformations.targetWidth=70;
                                                                 Picasso.get().load(petUri)
                                                                         .placeholder(R.drawable.default_profile_image)
                                                                         .error(R.drawable.default_profile_image)
-                                                                        .transform(PicassoTransformations.resizeTransformation)
+                                                                        .resize(0,90)
                                                                         .into(holder.ivPet);
                                                             }
                                                         });

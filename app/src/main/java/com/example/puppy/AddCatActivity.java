@@ -160,11 +160,10 @@ public class AddCatActivity extends AppCompatActivity {
         if(requestCode==REQUEST_IMAGE_CODE){
             final Uri image=data.getData();
             Log.d(TAG, "onActivityResult: "+image);
-            PicassoTransformations.targetWidth=150;
             Picasso.get().load(image)
                     .placeholder(R.drawable.default_profile_image)
                     .error(R.drawable.default_profile_image)
-                    .transform(PicassoTransformations.resizeTransformation)
+                    .resize(0,90)
                     .into(cvCat);
 
             final StorageReference riversRef = mStorageRef.child("Pets").child(currentUserID).child(documentId).child("profile.jpg");

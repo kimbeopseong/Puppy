@@ -10,7 +10,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.puppy.Cat;
-import com.example.puppy.PicassoTransformations;
 import com.example.puppy.R;
 import com.firebase.ui.firestore.paging.FirestorePagingAdapter;
 import com.firebase.ui.firestore.paging.FirestorePagingOptions;
@@ -40,12 +39,11 @@ public class RecordCatChoiceAdapter extends FirestorePagingAdapter<Cat, RecordCa
     protected void onBindViewHolder(@NonNull final RecordCatChoiceAdapter.ViewHolder holder, int position, @NonNull Cat model) {
         holder.choiceName.setText(model.getCatName());
         choiced_pet_uri = model.getProfile();
-        PicassoTransformations.targetWidth = 70;
         Picasso.get().load(choiced_pet_uri)
                 .networkPolicy(NetworkPolicy.OFFLINE)
                 .placeholder(R.drawable.default_profile_image)
                 .error(R.drawable.default_profile_image)
-                .transform(PicassoTransformations.resizeTransformation)
+                .resize(0,90)
                 .into(holder.choiceProfile, new Callback() {
                     @Override
                     public void onSuccess() {
@@ -54,11 +52,10 @@ public class RecordCatChoiceAdapter extends FirestorePagingAdapter<Cat, RecordCa
 
                     @Override
                     public void onError(Exception e) {
-                        PicassoTransformations.targetWidth = 70;
                         Picasso.get().load(choiced_pet_uri)
                                 .placeholder(R.drawable.default_profile_image)
                                 .error(R.drawable.default_profile_image)
-                                .transform(PicassoTransformations.resizeTransformation)
+                                .resize(0,90)
                                 .into(holder.choiceProfile);
                     }
                 });

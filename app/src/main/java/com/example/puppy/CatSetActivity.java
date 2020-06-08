@@ -108,23 +108,21 @@ public class CatSetActivity extends AppCompatActivity {
                     petSpec=task.getResult().get("p_species").toString();
                     if(task.getResult().contains("p_uri")){
                         petUri=task.getResult().get("p_uri").toString();
-                        PicassoTransformations.targetWidth=70;
                         Picasso.get().load(petUri)
                                 .networkPolicy(NetworkPolicy.OFFLINE)
                                 .placeholder(R.drawable.default_profile_image)
                                 .error(R.drawable.default_profile_image)
-                                .transform(PicassoTransformations.resizeTransformation)
+                                .resize(0,90)
                                 .into(cvUpdateCat, new Callback() {
                                     @Override
                                     public void onSuccess() {
                                     }
                                     @Override
                                     public void onError(Exception e) {
-                                        PicassoTransformations.targetWidth=70;
                                         Picasso.get().load(petUri)
                                                 .placeholder(R.drawable.default_profile_image)
                                                 .error(R.drawable.default_profile_image)
-                                                .transform(PicassoTransformations.resizeTransformation)
+                                               .resize(0,90)
                                                 .into(cvUpdateCat);
                                     }
                                 });
@@ -202,11 +200,10 @@ public class CatSetActivity extends AppCompatActivity {
         if(requestCode==REQUEST_IMAGE_CODE){
             final Uri image=data.getData();
             Log.d(TAG, "onActivityResult: "+image);
-            PicassoTransformations.targetWidth=150;
             Picasso.get().load(image)
                     .placeholder(R.drawable.default_profile_image)
                     .error(R.drawable.default_profile_image)
-                    .transform(PicassoTransformations.resizeTransformation)
+                    .resize(0,100)
                     .into(cvUpdateCat);
 
             final StorageReference riversRef = mStorageRef.child("Pets").child(currentUserID).child(document_id).child("profile.jpg");
