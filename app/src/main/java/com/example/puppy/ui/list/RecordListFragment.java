@@ -41,7 +41,6 @@ public class RecordListFragment extends AppCompatActivity implements RecycleAdap
     FirebaseFirestore db;
 
     CollectionReference poopData;
-    Query query;
 
     public RecordListFragment(){}
 
@@ -60,14 +59,12 @@ public class RecordListFragment extends AppCompatActivity implements RecycleAdap
         poopData = db.collection("Pet").document(currentPID).collection("PoopData");
 
         //Query for read the dataset
-//        query = pet.whereEqualTo("UID",currentUID);
-//        query = poopData;
         PagedList.Config config = new PagedList.Config.Builder().setInitialLoadSizeHint(10).setPageSize(3).build();
 
         //RecyclerOptions
         FirestorePagingOptions<RecordItem> options = new FirestorePagingOptions.Builder<RecordItem>()
                 .setLifecycleOwner(this)
-                .setQuery(poopData, config, new SnapshotParser<RecordItem>() {
+                .setQuery(poopData.orderBy("date", Query.Direction.DESCENDING), config, new SnapshotParser<RecordItem>() {
                     @NonNull
                     @Override
                     public RecordItem parseSnapshot(@NonNull DocumentSnapshot snapshot) {

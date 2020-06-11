@@ -9,11 +9,11 @@ public class RecordItem {
     private String date;
 
     private String stat;
-    private long lv;
+    private String lv;
 
     public RecordItem(){}
 
-    public RecordItem(String date, String stat, long lv, String item_Id){
+    public RecordItem(String date, String stat, String lv, String item_Id){
         this.date = date;
         this.stat = stat;
         this.lv = lv;
@@ -44,11 +44,11 @@ public class RecordItem {
         this.stat = stat;
     }
 
-    public long getLv() {
+    public String getLv() {
         return lv;
     }
 
-    public void setLv(long lv) {
+    public void setLv(String lv) {
         this.lv = lv;
     }
 }
