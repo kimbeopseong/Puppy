@@ -27,6 +27,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.puppy.MainActivity;
 import com.example.puppy.R;
+import com.example.puppy.ResultActivity;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -62,6 +63,7 @@ public class CameraFragment extends Activity {
     Intent intent;
 
     String poopy_uri;
+    private String date, stat, lv, currentPID;
 
     public static CameraFragment getInstance(){
         CameraFragment f = new CameraFragment();
@@ -79,9 +81,13 @@ public class CameraFragment extends Activity {
         mAuth = FirebaseAuth.getInstance();
         currentUserID = mAuth.getCurrentUser().getUid();
 
-       intent=getIntent();
+        long now = System.currentTimeMillis();
+        Date mDate = new Date(now);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        date = simpleDateFormat.format(mDate);
 
-
+        intent=getIntent();
+        currentPID = intent.getStringExtra("pid");
 
 
         Button btnCam = (Button) findViewById(R.id.btn_camera);
@@ -145,16 +151,24 @@ public class CameraFragment extends Activity {
                 public void onComplete(@NonNull Task<Uri> task) {
                     if(task.isSuccessful()){
                         poopy_uri=task.getResult().toString();
+                        stat = "this is stat";
+                        lv = "1";
 
-                        HashMap<String, Object> update_poopy_data=new HashMap<>();
+                        final HashMap<String, Object> update_poopy_data=new HashMap<>();
                         update_poopy_data.put("poopy_uri",poopy_uri);
                         update_poopy_data.put("uid",currentUserID);
+                        update_poopy_data.put("date",date);
+                        update_poopy_data.put("stat",stat);
+                        update_poopy_data.put("lv",lv);
+
 
                         db.collection("Pet").document(intent.getExtras().get("pid").toString()).collection("PoopData").document().set(update_poopy_data, SetOptions.merge())
                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void aVoid) {
-
+                                        Intent goResult = callResult(update_poopy_data);
+                                        startActivity(goResult);
+                                        finish();
                                     }
                                 });
                     }
@@ -180,22 +194,37 @@ public class CameraFragment extends Activity {
                 public void onComplete(@NonNull Task<Uri> task) {
                     if(task.isSuccessful()){
                         poopy_uri=task.getResult().toString();
+                        stat = "this is stat";
+                        lv = "1";
 
-                        HashMap<String, Object> update_poopy_data=new HashMap<>();
+                        final HashMap<String, Object> update_poopy_data=new HashMap<>();
                         update_poopy_data.put("poopy_uri",poopy_uri);
                         update_poopy_data.put("uid",currentUserID);
+                        update_poopy_data.put("date",date);
+                        update_poopy_data.put("stat",stat);
+                        update_poopy_data.put("lv",lv);
 
                         db.collection("Pet").document(intent.getExtras().get("pid").toString()).collection("PoopData").document().set(update_poopy_data, SetOptions.merge())
                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void aVoid) {
-
+                                        Intent goResult = callResult(update_poopy_data);
+                                        startActivity(goResult);
+                                        finish();
                                     }
                                 });
                     }
                 }
             });
         }
+    }
+
+    private Intent callResult(HashMap<String, Object> map){
+        Intent result = new Intent(this, ResultActivity.class);
+        result.putExtra("uri", poopy_uri);
+        result.putExtra("date",date);
+        result.putExtra("pid", currentPID);
+        return result;
     }
 
     private File createImageFile() throws IOException {
