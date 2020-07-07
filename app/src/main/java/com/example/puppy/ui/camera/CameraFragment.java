@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import androidx.appcompat.app.AppCompatActivity;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -48,7 +49,7 @@ import java.util.HashMap;
 
 import xyz.hasnat.sweettoast.SweetToast;
 
-public class CameraFragment extends Activity {
+public class CameraFragment extends AppCompatActivity {
     int REQUEST_IMAGE_CODE=1001;
     private static final int REQUEST_IMAGE_CAPTURE = 100;
 
@@ -65,6 +66,8 @@ public class CameraFragment extends Activity {
     String poopy_uri;
     private String date, stat, lv, currentPID;
 
+    public static float sDensity;
+
     public static CameraFragment getInstance(){
         CameraFragment f = new CameraFragment();
         return f;
@@ -75,6 +78,12 @@ public class CameraFragment extends Activity {
         super.onCreate(savedInstanceState);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.fragment_cam);
+        sDensity = getApplicationContext().getResources().getDisplayMetrics().density;
+        if (null == savedInstanceState) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.container, Camera2BasicFragment.newInstance())
+                    .commit();
+        }
 
         db = FirebaseFirestore.getInstance();
         mStorageRef = FirebaseStorage.getInstance().getReference();
@@ -89,46 +98,8 @@ public class CameraFragment extends Activity {
         intent=getIntent();
         currentPID = intent.getStringExtra("pid");
 
-
-        Button btnCam = (Button) findViewById(R.id.btn_camera);
-        Button btnGal = (Button) findViewById(R.id.btn_gallery);
-        btnCam.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                if (intent.resolveActivity(getPackageManager()) != null) {
-                    File photoFile = null;
-                    try {
-                        photoFile = createImageFile();
-                    } catch (IOException ex) {
-                        // Error occurred while creating the File
-                    }
-
-                    if (photoFile != null) {
-                        photoUri = FileProvider.getUriForFile(getApplicationContext(), getPackageName(), photoFile);
-
-                        intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
-                        startActivityForResult(intent, REQUEST_IMAGE_CAPTURE);
-                    }
-                }
-            }
-        });
-        btnGal.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent in=new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                startActivityForResult(in, REQUEST_IMAGE_CODE);
-            }
-        });
     }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        if (event.getAction() == MotionEvent.ACTION_OUTSIDE){
-            return false;
-        }
-        return true;
-    }
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

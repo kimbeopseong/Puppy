@@ -19,4 +19,8 @@
     <string name="already_have_account">Already have an account?</string>
     <string name="signup">Create Account</string>
     <string name="register_success_popup">Registered successfully.\nVerification email has been sent.\nPlease verify email.</string>
+    <string name="picture">촬영</string>
+    <string name="description_info">Info</string>
+    <string name="request_permission">This sample needs camera permission.</string>
+    <string name="camera_error">This device doesn\'t support Camera2 API.</string>
 </resources>
