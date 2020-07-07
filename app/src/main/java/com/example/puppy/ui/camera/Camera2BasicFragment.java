@@ -1025,7 +1025,9 @@ public class Camera2BasicFragment extends Fragment
                                         public void onSuccess(Void aVoid) {
                                             Intent goResult = callResult(update_poopy_data);
                                             startActivity(goResult);
-
+                                            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+                                            fragmentManager.beginTransaction().remove(Camera2BasicFragment.this).commit();
+                                            fragmentManager.popBackStack();
                                         }
                                     });
                         }

@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.puppy.ui.camera.CameraFragment;
 import com.example.puppy.ui.list.RecordListFragment;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -104,7 +105,9 @@ public class ResultActivity extends AppCompatActivity {
             btn_resConfirm.setOnClickListener((new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    onBackPressed();
+                    CameraFragment cameraFragment = (CameraFragment) CameraFragment.cameraFragment;
+                    cameraFragment.finish();
+                    finish();
                 }
             }));
         } catch (Exception e){
