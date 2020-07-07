@@ -104,7 +104,7 @@ public class ResultActivity extends AppCompatActivity {
             btn_resConfirm.setOnClickListener((new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    onBackPressed();
+                    finish();
                 }
             }));
         } catch (Exception e){
