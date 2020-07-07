@@ -992,7 +992,7 @@ public class Camera2BasicFragment extends Fragment
                 resultImage.compress(Bitmap.CompressFormat.PNG, 100, output);
                 output.write(bytes);
 
-                final StorageReference riversRef = mStorageRef.child("Feeds").child(currentUserID).child(intent.getExtras().get("pid").toString()).child("poopy.jpg");
+                final StorageReference riversRef = mStorageRef.child("Feeds").child(currentUserID).child(intent.getExtras().get("pid").toString()).child(date+".jpg");
                 UploadTask uploadTask=riversRef.putFile(uri);
                 Task<Uri> uriTask=uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
                     @Override
@@ -1025,9 +1025,8 @@ public class Camera2BasicFragment extends Fragment
                                         public void onSuccess(Void aVoid) {
                                             Intent goResult = callResult(update_poopy_data);
                                             startActivity(goResult);
-                                            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-                                            fragmentManager.beginTransaction().remove(Camera2BasicFragment.this).commit();
-                                            fragmentManager.popBackStack();
+                                            CameraFragment cameraFragment = (CameraFragment) CameraFragment.cameraFragment;
+                                            cameraFragment.finish();
                                         }
                                     });
                         }
