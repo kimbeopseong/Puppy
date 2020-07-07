@@ -102,12 +102,6 @@ public class ResultActivity extends AppCompatActivity {
                 }
             });
 
-            btn_resConfirm.setOnClickListener((new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    finish();
-                }
-            }));
         } catch (Exception e){
             date = intent.getStringExtra("date");
 
@@ -144,14 +138,14 @@ public class ResultActivity extends AppCompatActivity {
                     }
                 }
             });
-            btn_resConfirm.setOnClickListener((new View.OnClickListener(){
-                @Override
-                public void onClick(View v) {
-                    finish();
-                }
-            }));
 
         }
+        btn_resConfirm.setOnClickListener((new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        }));
 
     }
 }

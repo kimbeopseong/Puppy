@@ -20,6 +20,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -1024,7 +1025,13 @@ public class Camera2BasicFragment extends Fragment
                                         @Override
                                         public void onSuccess(Void aVoid) {
                                             Intent goResult = callResult(update_poopy_data);
+                                            ProgressDialog progressDialog = new ProgressDialog(Camera2BasicFragment.this.getContext());
+                                            progressDialog.setMessage("분석중...");
+                                            progressDialog.setCancelable(true);
+                                            progressDialog.setProgressStyle(android.R.style.Widget_ProgressBar_Horizontal);
+                                            progressDialog.show();
                                             startActivity(goResult);
+                                            progressDialog.dismiss();
                                             CameraFragment cameraFragment = (CameraFragment) CameraFragment.cameraFragment;
                                             cameraFragment.finish();
                                         }
