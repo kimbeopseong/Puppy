@@ -42,7 +42,6 @@
         <activity android:name=".AnalysisActivity" />
         <activity android:name=".ui.list.RecordListFragment" />
         <activity
-            android:theme="@style/popupTheme"
             android:screenOrientation="portrait"
             android:name=".ui.camera.CameraFragment" />
 

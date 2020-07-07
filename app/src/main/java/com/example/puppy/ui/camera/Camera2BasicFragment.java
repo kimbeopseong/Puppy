@@ -22,6 +22,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -44,6 +45,7 @@ import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -62,24 +64,53 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import com.example.puppy.R;
+import com.example.puppy.ResultActivity;
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import xyz.hasnat.sweettoast.SweetToast;
+
 public class Camera2BasicFragment extends Fragment
         implements View.OnClickListener, ActivityCompat.OnRequestPermissionsResultCallback {
 
+    private StorageReference mStorageRef;
+    private String currentUserID;
+    private FirebaseAuth mAuth;
+
+    private String imageFilePath;
+    private Uri photoUri;
+
+    FirebaseFirestore db;
+    Intent intent;
+
+    String poopy_uri;
+    private String date, stat, lv, currentPID;
     /**
      * Conversion from screen rotation to JPEG orientation.
      */
@@ -427,13 +458,24 @@ public class Camera2BasicFragment extends Fragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        db = FirebaseFirestore.getInstance();
+        mStorageRef = FirebaseStorage.getInstance().getReference();
+        mAuth = FirebaseAuth.getInstance();
+        currentUserID = mAuth.getCurrentUser().getUid();
+
+        long now = System.currentTimeMillis();
+        Date mDate = new Date(now);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        date = simpleDateFormat.format(mDate);
+
+        intent= CameraFragment.intent;
+        currentPID = intent.getStringExtra("pid");
         return inflater.inflate(R.layout.fragment_camera2_basic, container, false);
     }
 
     @Override
     public void onViewCreated(final View view, Bundle savedInstanceState) {
         view.findViewById(R.id.picture).setOnClickListener(this);
-//        view.findViewById(R.id.info).setOnClickListener(this);
         mTextureView = (AutoFitTextureView) view.findViewById(R.id.texture);
     }
 
@@ -892,22 +934,7 @@ public class Camera2BasicFragment extends Fragment
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.picture: {
-                takePicture();
-                break;
-            }
-            case R.id.info: {
-                Activity activity = getActivity();
-                if (null != activity) {
-                    new AlertDialog.Builder(activity)
-                            .setMessage(R.string.app_name)
-                            .setPositiveButton(android.R.string.ok, null)
-                            .show();
-                }
-                break;
-            }
-        }
+        takePicture();
     }
 
     private void setAutoFlash(CaptureRequest.Builder requestBuilder) {
@@ -920,7 +947,7 @@ public class Camera2BasicFragment extends Fragment
     /**
      * Saves a JPEG {@link Image} into the specified {@link File}.
      */
-    private static class ImageSaver implements Runnable {
+    private class ImageSaver implements Runnable {
 
         /**
          * The JPEG image
@@ -931,9 +958,12 @@ public class Camera2BasicFragment extends Fragment
          */
         private final File mFile;
 
+        private final Uri uri;
+
         ImageSaver(Image image, File file) {
             mImage = image;
             mFile = file;
+            uri = Uri.fromFile(mFile);
         }
 
         @Override
@@ -961,6 +991,46 @@ public class Camera2BasicFragment extends Fragment
                 output = new FileOutputStream(mFile);
                 resultImage.compress(Bitmap.CompressFormat.PNG, 100, output);
                 output.write(bytes);
+
+                final StorageReference riversRef = mStorageRef.child("Feeds").child(currentUserID).child(intent.getExtras().get("pid").toString()).child("poopy.jpg");
+                UploadTask uploadTask=riversRef.putFile(uri);
+                Task<Uri> uriTask=uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                    @Override
+                    public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                        if(!task.isSuccessful()){
+                            SweetToast.error(getContext(), "Poopy Photo Error: " + task.getException().getMessage());
+                        }
+                        poopy_uri=riversRef.getDownloadUrl().toString();
+                        return riversRef.getDownloadUrl();
+                    }
+                }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Uri> task) {
+                        if(task.isSuccessful()){
+                            poopy_uri=task.getResult().toString();
+                            stat = "this is stat";
+                            lv = "1";
+
+                            final HashMap<String, Object> update_poopy_data=new HashMap<>();
+                            update_poopy_data.put("poopy_uri",poopy_uri);
+                            update_poopy_data.put("uid",currentUserID);
+                            update_poopy_data.put("date",date);
+                            update_poopy_data.put("stat",stat);
+                            update_poopy_data.put("lv",lv);
+
+
+                            db.collection("Pet").document(intent.getExtras().get("pid").toString()).collection("PoopData").document().set(update_poopy_data, SetOptions.merge())
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            Intent goResult = callResult(update_poopy_data);
+                                            startActivity(goResult);
+
+                                        }
+                                    });
+                        }
+                    }
+                });
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
@@ -975,6 +1045,13 @@ public class Camera2BasicFragment extends Fragment
             }
         }
 
+    }
+    private Intent callResult(HashMap<String, Object> map){
+        Intent result = new Intent(this.getContext(), ResultActivity.class);
+        result.putExtra("uri", poopy_uri);
+        result.putExtra("date",date);
+        result.putExtra("pid", currentPID);
+        return result;
     }
 
     /**
