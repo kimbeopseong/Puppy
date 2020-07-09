@@ -44,10 +44,12 @@ import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
+import android.media.ExifInterface;
 import android.media.Image;
 import android.media.ImageReader;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import androidx.annotation.NonNull;
@@ -92,6 +94,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -483,7 +486,8 @@ public class Camera2BasicFragment extends Fragment
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mFile = new File(getActivity().getExternalFilesDir(null), "pic.jpg");
+        String currentTime = generateTimestamp();
+        mFile = new File(getActivity().getExternalFilesDir(null), currentTime + ".jpg");
     }
 
     @Override
@@ -974,11 +978,16 @@ public class Camera2BasicFragment extends Fragment
             buffer.get(bytes);
             FileOutputStream output = null;
             Bitmap resizingImage = null;
+            Bitmap devResizingImg = null;
             Bitmap resultImage = null;
             Bitmap captureImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
 
             if (captureImage != null){
-                resizingImage = Bitmap.createScaledBitmap(captureImage, 1440, 1920, true);
+//              go to DB
+                resizingImage = Bitmap.createScaledBitmap(captureImage, 255, 255, true);
+                ExifInterface exif = null;
+//              go to device
+                devResizingImg = Bitmap.createScaledBitmap(captureImage, 1440, 1920, true);
 
                 Canvas canvas = new Canvas();
                 resultImage = Bitmap.createBitmap(resizingImage.getWidth(), resizingImage.getHeight(), Bitmap.Config.ARGB_8888);
@@ -1060,6 +1069,11 @@ public class Camera2BasicFragment extends Fragment
         result.putExtra("date",date);
         result.putExtra("pid", currentPID);
         return result;
+    }
+
+    private static String generateTimestamp() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS");
+        return sdf.format(new Date());
     }
 
     /**
