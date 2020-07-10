@@ -82,7 +82,7 @@ public class HomeFragment extends Fragment {
                 new FirestoreRecyclerAdapter<Cat, CatViewHolder>(options) {
                     @Override
                     protected void onBindViewHolder(@NonNull final CatViewHolder holder, int position, @NonNull Cat model) {
-                        final String cat_uid=getSnapshots().getSnapshot(position).getId();
+                        final String cat_uid = getSnapshots().getSnapshot(position).getId();
                         DocumentReference docRef=getSnapshots().getSnapshot(position).getReference();
                         docRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
                             @Override
