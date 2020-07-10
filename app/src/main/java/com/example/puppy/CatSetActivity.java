@@ -96,7 +96,7 @@ public class CatSetActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         currentUserID = mAuth.getCurrentUser().getUid();
         mStorageRef = FirebaseStorage.getInstance().getReference();
-
+        //load pet info from firebase
         DocumentReference docRef = db.collection("Pet").document(document_id);
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -112,7 +112,7 @@ public class CatSetActivity extends AppCompatActivity {
                                 .networkPolicy(NetworkPolicy.OFFLINE)
                                 .placeholder(R.drawable.default_profile_image)
                                 .error(R.drawable.default_profile_image)
-                                .resize(0,90)
+                                .resize(0,150)
                                 .into(cvUpdateCat, new Callback() {
                                     @Override
                                     public void onSuccess() {
@@ -122,7 +122,7 @@ public class CatSetActivity extends AppCompatActivity {
                                         Picasso.get().load(petUri)
                                                 .placeholder(R.drawable.default_profile_image)
                                                 .error(R.drawable.default_profile_image)
-                                               .resize(0,90)
+                                                .resize(0,90)
                                                 .into(cvUpdateCat);
                                     }
                                 });
@@ -130,6 +130,7 @@ public class CatSetActivity extends AppCompatActivity {
                     updateCatName.setText(petName);
                     updateCatAge.setText(petAge);
                     updateCatSpecies.setText(petSpec);
+                    pet_profile_download_url = petUri;
                     if(petSex== "수컷")
                         rbtnCMale.setChecked(true);
                     else
@@ -137,7 +138,7 @@ public class CatSetActivity extends AppCompatActivity {
                 }
             }
         });
-
+        //
         cvUpdateCat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -145,6 +146,7 @@ public class CatSetActivity extends AppCompatActivity {
                 startActivityForResult(in, REQUEST_IMAGE_CODE);
             }
         });
+        //update cat info
         btn_updateCat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -159,6 +161,7 @@ public class CatSetActivity extends AppCompatActivity {
                 updateCat(catName, catAge, catSpecies, catSex, pet_profile_download_url);
                 Intent end_update = new Intent(CatSetActivity.this, MainActivity.class);
                 startActivity(end_update);
+                finish();
             }
         });
     }
@@ -194,7 +197,7 @@ public class CatSetActivity extends AppCompatActivity {
             });
         }
     }
-
+    //change pet photo
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode==REQUEST_IMAGE_CODE){

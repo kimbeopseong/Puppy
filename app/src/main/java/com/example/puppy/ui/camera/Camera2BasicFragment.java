@@ -73,14 +73,23 @@ import com.example.puppy.R;
 import com.example.puppy.ResultActivity;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
+import com.squareup.picasso.Picasso;
+
+import org.opencv.android.Utils;
+import org.opencv.core.Mat;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -109,6 +118,8 @@ public class Camera2BasicFragment extends Fragment
 
     private String imageFilePath;
     private Uri photoUri;
+    private Mat image_input;
+    private Mat image_output;
 
     FirebaseFirestore db;
     Intent intent;
@@ -127,6 +138,10 @@ public class Camera2BasicFragment extends Fragment
         ORIENTATIONS.append(Surface.ROTATION_90, 0);
         ORIENTATIONS.append(Surface.ROTATION_180, 270);
         ORIENTATIONS.append(Surface.ROTATION_270, 180);
+    }
+    static{
+        System.loadLibrary("opencv_java4");
+        System.loadLibrary("imageprocessing");
     }
 
     /**
@@ -435,7 +450,7 @@ public class Camera2BasicFragment extends Fragment
             if (option.getWidth() <= maxWidth && option.getHeight() <= maxHeight &&
                     option.getHeight() == option.getWidth() * h / w) {
                 if (option.getWidth() >= textureViewWidth &&
-                    option.getHeight() >= textureViewHeight) {
+                        option.getHeight() >= textureViewHeight) {
                     bigEnough.add(option);
                 } else {
                     notBigEnough.add(option);
@@ -472,7 +487,7 @@ public class Camera2BasicFragment extends Fragment
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
         date = simpleDateFormat.format(mDate);
 
-        intent= CameraFragment.intent;
+        intent = CameraFragment.intent;
         currentPID = intent.getStringExtra("pid");
         return inflater.inflate(R.layout.fragment_camera2_basic, container, false);
     }
@@ -952,6 +967,21 @@ public class Camera2BasicFragment extends Fragment
     /**
      * Saves a JPEG {@link Image} into the specified {@link File}.
      */
+
+    //imageprocessing.cpp JNI function
+    public native void imageprocessing(long input_image, long ouput_image);
+
+    //call imageprocessing JNI function
+    public Bitmap imageprocess_and_save() {
+        if (image_output == null)
+            image_output = new Mat();
+        imageprocessing(image_input.getNativeObjAddr(), image_output.getNativeObjAddr());
+        Bitmap bitmapOutput = Bitmap.createBitmap(image_output.cols(), image_output.rows(), Bitmap.Config.ARGB_8888);
+        //image_output to Bitmap
+        Utils.matToBitmap(image_output, bitmapOutput);
+        return bitmapOutput;
+    }
+
     private class ImageSaver implements Runnable {
 
         /**
@@ -982,7 +1012,7 @@ public class Camera2BasicFragment extends Fragment
             Bitmap resultImage = null;
             Bitmap captureImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
 
-            if (captureImage != null){
+            if (captureImage != null) {
 //              go to DB
                 resizingImage = Bitmap.createScaledBitmap(captureImage, 255, 255, true);
                 ExifInterface exif = null;
@@ -993,40 +1023,47 @@ public class Camera2BasicFragment extends Fragment
                 resultImage = Bitmap.createBitmap(resizingImage.getWidth(), resizingImage.getHeight(), Bitmap.Config.ARGB_8888);
                 canvas.setBitmap(resultImage);
                 canvas.drawBitmap(resizingImage, 0, 0, null);
-            } else{
+            } else {
                 Log.e("Camera2BasicFragment", "capture image is null!!!");
             }
+
+            //OpenCV imageprocessing(bitmapToMat => matToBitmap)
+            Bitmap tmp = resizingImage.copy(Bitmap.Config.ARGB_8888, true);
+            image_input = new Mat();
+            Utils.bitmapToMat(tmp, image_input);
+            //poop photo's foreground
+            Bitmap foreground = imageprocess_and_save();
 
             try {
                 output = new FileOutputStream(mFile);
                 resultImage.compress(Bitmap.CompressFormat.PNG, 100, output);
                 output.write(bytes);
 
-                final StorageReference riversRef = mStorageRef.child("Feeds").child(currentUserID).child(intent.getExtras().get("pid").toString()).child(date+".jpg");
-                UploadTask uploadTask=riversRef.putFile(uri);
-                Task<Uri> uriTask=uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                final StorageReference riversRef = mStorageRef.child("Feeds").child(currentUserID).child(intent.getExtras().get("pid").toString()).child(date + ".jpg");
+                UploadTask uploadTask = riversRef.putFile(uri);
+                Task<Uri> uriTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
                     @Override
                     public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
-                        if(!task.isSuccessful()){
+                        if (!task.isSuccessful()) {
                             SweetToast.error(getContext(), "Poopy Photo Error: " + task.getException().getMessage());
                         }
-                        poopy_uri=riversRef.getDownloadUrl().toString();
+                        poopy_uri = riversRef.getDownloadUrl().toString();
                         return riversRef.getDownloadUrl();
                     }
                 }).addOnCompleteListener(new OnCompleteListener<Uri>() {
                     @Override
                     public void onComplete(@NonNull Task<Uri> task) {
-                        if(task.isSuccessful()){
-                            poopy_uri=task.getResult().toString();
+                        if (task.isSuccessful()) {
+                            poopy_uri = task.getResult().toString();
                             stat = "this is stat";
                             lv = "1";
 
-                            final HashMap<String, Object> update_poopy_data=new HashMap<>();
-                            update_poopy_data.put("poopy_uri",poopy_uri);
-                            update_poopy_data.put("uid",currentUserID);
-                            update_poopy_data.put("date",date);
-                            update_poopy_data.put("stat",stat);
-                            update_poopy_data.put("lv",lv);
+                            final HashMap<String, Object> update_poopy_data = new HashMap<>();
+                            update_poopy_data.put("poopy_uri", poopy_uri);
+                            update_poopy_data.put("uid", currentUserID);
+                            update_poopy_data.put("date", date);
+                            update_poopy_data.put("stat", stat);
+                            update_poopy_data.put("lv", lv);
 
 
                             db.collection("Pet").document(intent.getExtras().get("pid").toString()).collection("PoopData").document().set(update_poopy_data, SetOptions.merge())
@@ -1063,10 +1100,12 @@ public class Camera2BasicFragment extends Fragment
         }
 
     }
-    private Intent callResult(HashMap<String, Object> map){
+
+    private Intent callResult(HashMap<String, Object> map) {
+
         Intent result = new Intent(this.getContext(), ResultActivity.class);
         result.putExtra("uri", poopy_uri);
-        result.putExtra("date",date);
+        result.putExtra("date", date);
         result.putExtra("pid", currentPID);
         return result;
     }
@@ -1153,5 +1192,4 @@ public class Camera2BasicFragment extends Fragment
                     .create();
         }
     }
-
 }
