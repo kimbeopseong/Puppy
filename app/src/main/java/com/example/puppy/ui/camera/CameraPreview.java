@@ -30,6 +30,9 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import org.opencv.android.Utils;
+import org.opencv.core.Mat;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -66,6 +69,13 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     String poopy_uri;
     private String date, stat, lv, currentPID;
+
+    static{
+        System.loadLibrary("opencv_java4");
+        System.loadLibrary("imageprocessing");
+    }
+
+    private Mat image_input, image_output;
 
     public CameraPreview(Context context, int cameraId) {
         super(context);
@@ -220,6 +230,13 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             bitmap = Bitmap.createBitmap(bitmap, 0, 0, w, h, matrix, true);
             resizingImage = Bitmap.createScaledBitmap(bitmap, 255, 255, true);
 
+            //OpenCV imageprocessing(bitmapToMat => matToBitmap)
+            Bitmap tmp = resizingImage.copy(Bitmap.Config.ARGB_8888, true);
+            image_input = new Mat();
+            Utils.bitmapToMat(tmp, image_input);
+            //poop photo's foreground
+            Bitmap foreground = imageprocess_and_save();
+
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             ByteArrayOutputStream resizeStream = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
@@ -328,6 +345,19 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         result.putExtra("date",date);
         result.putExtra("pid", currentPID);
         return result;
+    }
+
+    public native void imageprocessing(long input_image, long ouput_image);
+
+    //call imageprocessing JNI function
+    public Bitmap imageprocess_and_save() {
+        if (image_output == null)
+            image_output = new Mat();
+        imageprocessing(image_input.getNativeObjAddr(), image_output.getNativeObjAddr());
+        Bitmap bitmapOutput = Bitmap.createBitmap(image_output.cols(), image_output.rows(), Bitmap.Config.ARGB_8888);
+        //image_output to Bitmap
+        Utils.matToBitmap(image_output, bitmapOutput);
+        return bitmapOutput;
     }
 
 }
