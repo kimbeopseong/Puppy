@@ -236,6 +236,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             Utils.bitmapToMat(tmp, image_input);
             //poop photo's foreground
             Bitmap foreground = imageprocess_and_save();
+            if(foreground != null)
+                Log.d(TAG, "foreground is set");
 
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             ByteArrayOutputStream resizeStream = new ByteArrayOutputStream();
