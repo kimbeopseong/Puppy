@@ -26,6 +26,7 @@ import xyz.hasnat.sweettoast.SweetToast;
 
 public class CameraFragment extends AppCompatActivity implements CallbackInterface {
     public static Intent intent;
+    public static AppCompatActivity cameraFragment;
 
     private TextureView textureView;
     private CameraPreview cameraPreview;
@@ -44,6 +45,9 @@ public class CameraFragment extends AppCompatActivity implements CallbackInterfa
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
                 WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.fragment_cam);
+        intent=getIntent();
+
+        cameraFragment = CameraFragment.this;
 
         btnCapture = (Button) findViewById(R.id.btnCapture);
         textureView = (TextureView) findViewById(R.id.cameraTextureView);
@@ -56,7 +60,6 @@ public class CameraFragment extends AppCompatActivity implements CallbackInterfa
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, CameraFragment.REQUEST_STORAGE);
         }
 
-        intent=getIntent();
 
     }
 
