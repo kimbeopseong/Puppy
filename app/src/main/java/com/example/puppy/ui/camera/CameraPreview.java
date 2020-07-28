@@ -84,12 +84,6 @@ public class CameraPreview extends Thread {
     private StreamConfigurationMap map;
     private CallbackInterface callbackInterface;
 
-    private SurfaceHolder mHolder;
-    private int mCameraID;
-
-    private Camera mCamera;
-    private Camera.CameraInfo mCameraInfo;
-
     private int mDisplayOrientation;
 
     private StorageReference mStorageRef;
