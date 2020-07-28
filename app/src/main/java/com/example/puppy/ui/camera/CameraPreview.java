@@ -1,22 +1,42 @@
 package com.example.puppy.ui.camera;
 
+import android.Manifest;
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.ImageFormat;
 import android.graphics.Matrix;
-import android.hardware.Camera;
+import android.graphics.SurfaceTexture;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCaptureSession;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraDevice;
+import android.hardware.camera2.CameraManager;
+import android.hardware.camera2.CameraMetadata;
+import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.TotalCaptureResult;
+import android.hardware.camera2.params.StreamConfigurationMap;
+import android.media.Image;
+import android.media.ImageReader;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.util.Log;
+import android.util.Size;
+import android.util.SparseIntArray;
 import android.view.Surface;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
+import android.view.TextureView;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.example.puppy.ResultActivity;
 import com.google.android.gms.tasks.Continuation;
@@ -38,37 +58,51 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.Semaphore;
 
 import xyz.hasnat.sweettoast.SweetToast;
 
-public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
+public class CameraPreview extends Thread {
 
     private final String TAG = "cameraPreview";
     private Context mContext;
+    private Size previewSize;
+    private CameraDevice mCameraDevice;
+    private CaptureRequest.Builder mPreviewBuilder;
+    private CameraCaptureSession mPreviewSession;
+    private TextureView mPreview;
+    private Button capture;
+    private StreamConfigurationMap map;
+    private CallbackInterface callbackInterface;
 
-    private SurfaceHolder mHolder;
-    private int mCameraID;
-
-    private Camera mCamera;
-    private Camera.CameraInfo mCameraInfo;
-
-    private int mDisplayOrientation;
+    private int deviceRotation;
 
     private StorageReference mStorageRef;
     private String currentUserID;
     private FirebaseAuth mAuth;
-
-    private String imageFilePath;
-    private Uri photoUri;
 
     FirebaseFirestore db;
     Intent intent;
 
     String poopy_uri;
     private String date, stat, lv, currentPID;
+
+    private static final SparseIntArray ORIENTATIONS = new SparseIntArray(4);
+
+    static {
+        ORIENTATIONS.append(Surface.ROTATION_0, 90);
+        ORIENTATIONS.append(Surface.ROTATION_90, 0);
+        ORIENTATIONS.append(Surface.ROTATION_180, 270);
+        ORIENTATIONS.append(Surface.ROTATION_270, 180);
+    }
 
     static{
         System.loadLibrary("opencv_java4");
@@ -77,25 +111,16 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     private Mat image_input, image_output;
 
-    public CameraPreview(Context context, int cameraId) {
-        super(context);
-        this.mContext = context;
-        Log.d(TAG, "MyCameraPreview cameraId: " + cameraId);
-
-        mCameraID = cameraId;
-
-        try{
-            mCamera = Camera.open(mCameraID);
-        } catch (Exception e){
-            Log.d(TAG, "Camera is not available");
-        }
-
-        mHolder = getHolder();
-        mHolder.addCallback(this);
-
-        mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-
-        mDisplayOrientation = ((Activity)context).getWindowManager().getDefaultDisplay().getRotation();
+    public CameraPreview(Context context, TextureView textureView, Button button) {
+        mContext = context;
+        mPreview = textureView;
+        capture = button;
+        capture.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                takePicture();
+            }
+        });
 
         db = FirebaseFirestore.getInstance();
         mStorageRef = FirebaseStorage.getInstance().getReference();
@@ -111,238 +136,352 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         currentPID = intent.getStringExtra("pid");
     }
 
-    @Override
-    public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
-        Log.d(TAG, "surfaceCreated");
-
-        Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
-        Camera.getCameraInfo(mCameraID, cameraInfo);
-
-        mCameraInfo = cameraInfo;
-
-        try {
-            mCamera.setPreviewDisplay(surfaceHolder);
-            mCamera.startPreview();
-        } catch (IOException e){
-            Log.d(TAG, "Error setting camera preview: " + e.getMessage());
-        }
+    public void setOnCallbackListener(CallbackInterface callbackInterface){
+        this.callbackInterface = callbackInterface;
     }
 
-    @Override
-    public void surfaceChanged(@NonNull SurfaceHolder surfaceHolder, int i, int i1, int i2) {
-        Log.d(TAG, "surfaceChanged");
+    private String getBackFacingCameraId(CameraManager cameraManager){
+        try{
+            for (final String cameraId : cameraManager.getCameraIdList()){
+                CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(cameraId);
+                int cameraOrientation = characteristics.get(CameraCharacteristics.LENS_FACING);
+                if (cameraOrientation == CameraCharacteristics.LENS_FACING_BACK) return cameraId;
+            }
+        } catch (CameraAccessException e){
+            e.printStackTrace();
+        }
+        return null;
+    }
 
-        if (mHolder.getSurface() == null){
-            Log.e(TAG, "preview surface does not exist");
+    public void openCamera(){
+        CameraManager manager = (CameraManager) mContext.getSystemService(Context.CAMERA_SERVICE);
+        Log.e(TAG, "openCamera");
+        try {
+            String cameraId = getBackFacingCameraId(manager);
+            CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraId);
+            map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+            previewSize = map.getOutputSizes(SurfaceTexture.class)[0];
+
+            int permissionCamera = ContextCompat.checkSelfPermission(mContext, Manifest.permission.CAMERA);
+            int permissionStorage = ContextCompat.checkSelfPermission(mContext, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+            if (permissionCamera == PackageManager.PERMISSION_DENIED){
+                ActivityCompat.requestPermissions((Activity) mContext, new String[]{Manifest.permission.CAMERA}, CameraFragment.REQUEST_CAM);
+            } else if (permissionStorage == PackageManager.PERMISSION_DENIED){
+                ActivityCompat.requestPermissions((Activity) mContext, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, CameraFragment.REQUEST_STORAGE);
+            } else {
+                manager.openCamera(cameraId, mStateCallback, null);
+            }
+        } catch (CameraAccessException e){
+            e.printStackTrace();
+        }
+        Log.e(TAG, "openCamera: End");
+    }
+
+    private TextureView.SurfaceTextureListener surfaceTextureListener = new TextureView.SurfaceTextureListener() {
+        @Override
+        public void onSurfaceTextureAvailable(@NonNull SurfaceTexture surfaceTexture, int i, int i1) {
+            Log.e(TAG, "onSurfaceTextureAvailable: width = " + i + ", height = " + i1);
+            openCamera();
+        }
+
+        @Override
+        public void onSurfaceTextureSizeChanged(@NonNull SurfaceTexture surfaceTexture, int i, int i1) {
+            Log.e(TAG, "onSurfaceTextureSizeChanged");
+        }
+
+        @Override
+        public boolean onSurfaceTextureDestroyed(@NonNull SurfaceTexture surfaceTexture) {
+            return false;
+        }
+
+        @Override
+        public void onSurfaceTextureUpdated(@NonNull SurfaceTexture surfaceTexture) {
+
+        }
+    };
+
+    private CameraDevice.StateCallback mStateCallback = new CameraDevice.StateCallback() {
+        @Override
+        public void onOpened(@NonNull CameraDevice cameraDevice) {
+            Log.e(TAG, "onOpened");
+            mCameraDevice = cameraDevice;
+            startPreview();
+        }
+
+        @Override
+        public void onDisconnected(@NonNull CameraDevice cameraDevice) {
+            Log.e(TAG, "onDisconnected");
+        }
+
+        @Override
+        public void onError(@NonNull CameraDevice cameraDevice, int i) {
+            Log.e(TAG, "onError");
+        }
+    };
+
+    protected void startPreview(){
+        if (null == mCameraDevice || !mPreview.isAvailable() || null == previewSize){
+            Log.e(TAG, "startPreview: fail. return");
+        }
+
+        SurfaceTexture texture = mPreview.getSurfaceTexture();
+        if (null == texture){
+            Log.e(TAG, "Texture is null. return.");
             return;
         }
 
-        try {
-            mCamera.stopPreview();
-            Log.d(TAG, "preview stopped.");
-        } catch (Exception e){
-            Log.d(TAG, "Error starting camera preview: " + e.getMessage());
+        texture.setDefaultBufferSize(previewSize.getWidth(), previewSize.getHeight());
+        Surface surface = new Surface(texture);
+
+        try{
+            mPreviewBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+        } catch (CameraAccessException e){
+            e.printStackTrace();
         }
+        mPreviewBuilder.addTarget(surface);
 
-        int orientation = calculatePreviewOrientation(mCameraInfo, mDisplayOrientation);
-        mCamera.setDisplayOrientation(orientation);
+        try{
+            mCameraDevice.createCaptureSession(Arrays.asList(surface), new CameraCaptureSession.StateCallback() {
+                @Override
+                public void onConfigured(@NonNull CameraCaptureSession cameraCaptureSession) {
+                    mPreviewSession = cameraCaptureSession;
+                    updatePreview();
+                }
 
-        try {
-            mCamera.setPreviewDisplay(mHolder);
-            mCamera.startPreview();
-            Log.d(TAG, "Camera preview started");
-        } catch (Exception e){
-            Log.d(TAG, "Error starting camera preview: " + e.getMessage());
+                @Override
+                public void onConfigureFailed(@NonNull CameraCaptureSession cameraCaptureSession) {
+                    Toast.makeText(mContext, "onConfigureFailed", Toast.LENGTH_LONG).show();
+                }
+            }, null);
+        } catch (CameraAccessException e){
+            e.getMessage();
         }
     }
 
-    @Override
-    public void surfaceDestroyed(@NonNull SurfaceHolder surfaceHolder) {
-        Log.d(TAG, "surfaceDestroyed");
-    }
-
-    public int calculatePreviewOrientation(Camera.CameraInfo info, int rotation){
-        int degrees = 0;
-
-        switch (rotation){
-            case Surface
-                    .ROTATION_0:
-                degrees = 0;
-                break;
-            case Surface
-                    .ROTATION_90:
-                degrees = 90;
-                break;
-            case Surface
-                    .ROTATION_180:
-                degrees = 180;
-                break;
-            case Surface
-                    .ROTATION_270:
-                degrees = 270;
-                break;
+    protected void updatePreview(){
+        if (null == mCameraDevice){
+            Log.e(TAG, "updatePreview error. return");
         }
 
-        int result;
+        mPreviewBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+        HandlerThread thread = new HandlerThread("CameraPreview");
+        thread.start();
+        Handler backgroundHandler = new Handler(thread.getLooper());
 
-        if (info.facing == Camera.CameraInfo.CAMERA_FACING_BACK){
-            result = (info.orientation + degrees) % 360;
-//            result = (360 - result) % 360;
-        } else {
-            result = (info.orientation - degrees + 360) % 360;
+        try{
+            mPreviewSession.setRepeatingRequest(mPreviewBuilder.build(), null, backgroundHandler);
+        } catch (CameraAccessException e){
+            e.getMessage();
         }
-
-        return result;
     }
 
     public void takePicture() {
-        mCamera.takePicture(shutterCallback, rawCallback, jpegCallback);
+        if (null == mCameraDevice){
+            Log.e(TAG, "CameraDevice is null. return");
+            return;
+        }
+
+        try{
+            int width = 640;
+            int height = 480;
+
+            final ImageReader reader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 1);
+            List<Surface> outputSurfaces = new ArrayList<>(2);
+            outputSurfaces.add(reader.getSurface());
+            outputSurfaces.add(new Surface(mPreview.getSurfaceTexture()));
+
+            final CaptureRequest.Builder captureBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
+            captureBuilder.addTarget(reader.getSurface());
+            captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+
+            CameraManager manager = (CameraManager) mContext.getSystemService(Context.CAMERA_SERVICE);
+            CameraCharacteristics characteristics = manager.getCameraCharacteristics("0");
+            deviceRotation = ((Activity)mContext).getWindowManager().getDefaultDisplay().getRotation();
+            int sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
+            int surfaceRotation = ORIENTATIONS.get(deviceRotation);
+            int jpegOrientation = (surfaceRotation + sensorOrientation + 270) % 360;
+            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, jpegOrientation);
+
+
+            File path = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/poopy");
+            if (!path.exists()){
+                path.mkdirs();
+            }
+            String pic_name = String.format("%s.jpg", date);
+            final File file = new File(path, pic_name);
+            final Uri uri = Uri.fromFile(file);
+
+            ImageReader.OnImageAvailableListener readerListener = new ImageReader.OnImageAvailableListener() {
+                @Override
+                public void onImageAvailable(ImageReader imageReader) {
+                    Image image = null;
+                    try{
+                        image = reader.acquireNextImage();
+                        ByteBuffer buffer = image.getPlanes()[0].getBuffer();
+                        byte[] bytes = new byte[buffer.capacity()];
+                        buffer.get(bytes);
+
+                        BitmapFactory.Options options = new BitmapFactory.Options();
+                        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+                        Bitmap resizingImage = null;
+
+                        Matrix matrix = new Matrix();
+                        matrix.postRotate(90);
+
+                        bitmap.createBitmap(bitmap, 0, 0, 640, 480, matrix, true);
+                        resizingImage = Bitmap.createScaledBitmap(bitmap, 255, 255, true);
+
+                        //OpenCV imageprocessing(bitmapToMat => matToBitmap)
+                        Bitmap tmp = resizingImage.copy(Bitmap.Config.ARGB_8888, true);
+                        image_input = new Mat();
+                        Utils.bitmapToMat(tmp, image_input);
+                        //poop photo's foreground
+                        Bitmap foreground = imageprocess_and_save();
+                        if(foreground != null)
+                            Log.d(TAG, "foreground is set");
+
+                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+                        byte[] pic = stream.toByteArray();
+                        bytes = pic;
+                        save(bytes);
+                    } catch (FileNotFoundException e){
+                        e.printStackTrace();
+                    } catch (IOException e){
+                        e.printStackTrace();
+                    } finally {
+                        if (image != null){
+                            image.close();
+                            reader.close();
+                        }
+                    }
+                }
+
+                private void save(byte[] bytes) throws IOException {
+                    OutputStream output = null;
+                    try{
+                        output = new FileOutputStream(file);
+                        output.write(bytes);
+
+                        final StorageReference riversRef = mStorageRef.child("Feeds").child(currentUserID).child(intent.getExtras().get("pid").toString()).child(date+".jpg");
+                        UploadTask uploadTask=riversRef.putFile(uri);
+
+                        Task<Uri> uriTask=uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                            @Override
+                            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                                if(!task.isSuccessful()){
+                                    SweetToast.error(mContext, "Poopy Photo Error: " + task.getException().getMessage());
+                                }
+                                poopy_uri=riversRef.getDownloadUrl().toString();
+                                return riversRef.getDownloadUrl();
+                            }
+                        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Uri> task) {
+                                if(task.isSuccessful()){
+                                    poopy_uri=task.getResult().toString();
+                                    stat = "this is stat";
+                                    lv = "1";
+
+                                    final HashMap<String, Object> update_poopy_data=new HashMap<>();
+                                    update_poopy_data.put("poopy_uri",poopy_uri);
+                                    update_poopy_data.put("uid",currentUserID);
+                                    update_poopy_data.put("date",date);
+                                    update_poopy_data.put("stat",stat);
+                                    update_poopy_data.put("lv",lv);
+
+
+                                    db.collection("Pet").document(intent.getExtras().get("pid").toString())
+                                            .collection("PoopData").document().set(update_poopy_data, SetOptions.merge())
+                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                @Override
+                                                public void onSuccess(Void aVoid) {
+                                                    Intent goResult = callResult(update_poopy_data);
+                                                    mContext.startActivity(goResult);
+                                                    CameraFragment cameraFragment = (CameraFragment) CameraFragment.cameraFragment;
+                                                    cameraFragment.finish();
+                                                }
+                                            });
+                                }
+                            }
+                        });
+
+                    } finally {
+                        if (null != output){
+                            output.flush();
+                            output.close();
+                        }
+                    }
+                }
+            };
+
+            HandlerThread thread = new HandlerThread("CameraCapture");
+            thread.start();
+            final Handler backgroundHandler = new Handler(thread.getLooper());
+            reader.setOnImageAvailableListener(readerListener, backgroundHandler);
+
+            final CameraCaptureSession.CaptureCallback captureListener = new CameraCaptureSession.CaptureCallback() {
+                @Override
+                public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
+                    super.onCaptureCompleted(session, request, result);
+                    Toast.makeText(mContext, "Saved"+file, Toast.LENGTH_SHORT).show();
+                    startPreview();
+                }
+            };
+
+            mCameraDevice.createCaptureSession(outputSurfaces, new CameraCaptureSession.StateCallback() {
+                @Override
+                public void onConfigured(@NonNull CameraCaptureSession cameraCaptureSession) {
+                    try{
+                        cameraCaptureSession.capture(captureBuilder.build(), captureListener, backgroundHandler);
+                    } catch (CameraAccessException e){
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onConfigureFailed(@NonNull CameraCaptureSession cameraCaptureSession) {
+
+                }
+            }, backgroundHandler);
+
+        } catch (CameraAccessException e){
+            e.printStackTrace();
+        }
     }
 
-    private Camera.ShutterCallback shutterCallback = new Camera.ShutterCallback() {
-        @Override
-        public void onShutter() {
+    public void setSurfaceTextureListener(){
+        mPreview.setSurfaceTextureListener(surfaceTextureListener);
+    }
 
-        }
-    };
+    public void onResume(){
+        Log.d(TAG, "onResume");
+        setSurfaceTextureListener();
+    }
 
-    private Camera.PictureCallback rawCallback = new Camera.PictureCallback() {
-        @Override
-        public void onPictureTaken(byte[] bytes, Camera camera) {
+    private Semaphore mCameraOpenCloseLock = new Semaphore(1);
 
-        }
-    };
+    public void onPause(){
+        Log.d(TAG, "onPause");
 
-    private Camera.PictureCallback jpegCallback = new Camera.PictureCallback() {
-        @Override
-        public void onPictureTaken(byte[] bytes, Camera camera) {
-            int w = camera.getParameters().getPictureSize().width;
-            int h = camera.getParameters().getPictureSize().height;
-            int orientation = calculatePreviewOrientation(mCameraInfo, mDisplayOrientation);
-
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-            Bitmap resizingImage = null;
-            Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
-
-            Matrix matrix = new Matrix();
-            matrix.postRotate(orientation);
-            bitmap = Bitmap.createBitmap(bitmap, 0, 0, w, h, matrix, true);
-            resizingImage = Bitmap.createScaledBitmap(bitmap, 255, 255, true);
-
-            //OpenCV imageprocessing(bitmapToMat => matToBitmap)
-            Bitmap tmp = resizingImage.copy(Bitmap.Config.ARGB_8888, true);
-            image_input = new Mat();
-            Utils.bitmapToMat(tmp, image_input);
-            //poop photo's foreground
-            Bitmap foreground = imageprocess_and_save();
-            if(foreground != null)
-                Log.d(TAG, "foreground is set");
-
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            ByteArrayOutputStream resizeStream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-            resizingImage.compress(Bitmap.CompressFormat.PNG, 100, resizeStream);
-            byte[] currentData = stream.toByteArray();
-
-            new CameraPreview.SaveImageTask().execute(currentData);
-        }
-    };
-
-    private class SaveImageTask extends AsyncTask<byte[], Void, Void> {
-
-        @Override
-        protected Void doInBackground(byte[]... bytes) {
-            FileOutputStream outputStream = null;
-
-            try {
-                File path = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/poopy");
-                if (!path.exists()){
-                    path.mkdirs();
-                }
-
-                String fileName = String.format("%d.jpg", System.currentTimeMillis());
-                File outputFile = new File(path, fileName);
-                Uri uri = Uri.fromFile(outputFile);
-
-                outputStream = new FileOutputStream(outputFile);
-                outputStream.write(bytes[0]);
-                outputStream.flush();
-                outputStream.close();
-
-                final StorageReference riversRef = mStorageRef.child("Feeds").child(currentUserID).child(intent.getExtras().get("pid").toString()).child(date+".jpg");
-                UploadTask uploadTask=riversRef.putFile(uri);
-                Task<Uri> uriTask=uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
-                    @Override
-                    public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
-                        if(!task.isSuccessful()){
-                            SweetToast.error(getContext(), "Poopy Photo Error: " + task.getException().getMessage());
-                        }
-                        poopy_uri=riversRef.getDownloadUrl().toString();
-                        return riversRef.getDownloadUrl();
-                    }
-                }).addOnCompleteListener(new OnCompleteListener<Uri>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Uri> task) {
-                        if(task.isSuccessful()){
-                            poopy_uri=task.getResult().toString();
-                            stat = "this is stat";
-                            lv = "1";
-
-                            final HashMap<String, Object> update_poopy_data=new HashMap<>();
-                            update_poopy_data.put("poopy_uri",poopy_uri);
-                            update_poopy_data.put("uid",currentUserID);
-                            update_poopy_data.put("date",date);
-                            update_poopy_data.put("stat",stat);
-                            update_poopy_data.put("lv",lv);
-
-
-                            db.collection("Pet").document(intent.getExtras().get("pid").toString()).collection("PoopData").document().set(update_poopy_data, SetOptions.merge())
-                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void aVoid) {
-                                            Intent goResult = callResult(update_poopy_data);
-                                            mContext.startActivity(goResult);
-                                            CameraFragment cameraFragment = (CameraFragment) CameraFragment.cameraFragment;
-                                            cameraFragment.finish();
-                                        }
-                                    });
-                        }
-                    }
-                });
-
-                Log.d(TAG, "onPictureTaken-wrote bytes: " + bytes.length + " to " + outputFile.getAbsolutePath());
-
-                mCamera.startPreview();
-
-
-//              갤러리에 반영
-                Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-                mediaScanIntent.setData(uri);
-                getContext().sendBroadcast(mediaScanIntent);
-
-                try {
-                    mCamera.setPreviewDisplay(mHolder);
-                    mCamera.startPreview();
-                    Log.d(TAG, "Camera preview started");
-                } catch (Exception e){
-                    Log.d(TAG, "Error starting camera preview: " + e.getMessage());
-                }
-
-
-            } catch (FileNotFoundException e){
-                e.printStackTrace();
-            } catch (IOException e){
-                e.printStackTrace();
+        try{
+            mCameraOpenCloseLock.acquire();
+            if (null != mCameraDevice){
+                mCameraDevice.close();
+                mCameraDevice = null;
+                Log.d(TAG, "CameraDevice Closed !!!");
             }
-
-
-            return null;
+        } catch (InterruptedException e){
+            throw new RuntimeException("Interrupted while trying to lock camera closing.");
+        } finally {
+            mCameraOpenCloseLock.release();
         }
     }
 
     private Intent callResult(HashMap<String, Object> map){
-        Intent result = new Intent(this.getContext(), ResultActivity.class);
+        Intent result = new Intent(mContext, ResultActivity.class);
         result.putExtra("uri", poopy_uri);
         result.putExtra("date",date);
         result.putExtra("pid", currentPID);
