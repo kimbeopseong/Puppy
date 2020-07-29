@@ -119,6 +119,7 @@ public class CameraPreview extends Thread {
             @Override
             public void onClick(View view) {
                 takePicture();
+                Log.e(TAG, "촬영 버튼 클릭은 됩니다 !!!");
             }
         });
 
@@ -281,6 +282,7 @@ public class CameraPreview extends Thread {
             Log.e(TAG, "CameraDevice is null. return");
             return;
         }
+        Log.e(TAG, "촬영 함수에 진입하였습니다 !!!");
 
         try{
             int width = 640;
@@ -290,10 +292,12 @@ public class CameraPreview extends Thread {
             List<Surface> outputSurfaces = new ArrayList<>(2);
             outputSurfaces.add(reader.getSurface());
             outputSurfaces.add(new Surface(mPreview.getSurfaceTexture()));
+            Log.e(TAG, "이미지리더 객체 생성 !!!");
 
             final CaptureRequest.Builder captureBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
             captureBuilder.addTarget(reader.getSurface());
             captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+            Log.e(TAG, "캡쳐빌더 객체 생성 !!!");
 
             CameraManager manager = (CameraManager) mContext.getSystemService(Context.CAMERA_SERVICE);
             CameraCharacteristics characteristics = manager.getCameraCharacteristics("0");
@@ -305,6 +309,7 @@ public class CameraPreview extends Thread {
 
 
             File path = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/poopy");
+            Log.e(TAG, "파일 경로 지정 완료 !!!");
             if (!path.exists()){
                 path.mkdirs();
             }
@@ -316,6 +321,7 @@ public class CameraPreview extends Thread {
                 @Override
                 public void onImageAvailable(ImageReader imageReader) {
                     Image image = null;
+                    Log.e(TAG, "이미지리더 리스너 객체 함수 진입 !!!");
                     try{
                         image = reader.acquireNextImage();
                         ByteBuffer buffer = image.getPlanes()[0].getBuffer();
@@ -361,6 +367,7 @@ public class CameraPreview extends Thread {
 
                 private void save(byte[] bytes) throws IOException {
                     OutputStream output = null;
+                    Log.e(TAG, "세이브 함수 진입 !!!");
                     try{
                         output = new FileOutputStream(file);
                         output.write(bytes);
@@ -419,6 +426,7 @@ public class CameraPreview extends Thread {
 
             HandlerThread thread = new HandlerThread("CameraCapture");
             thread.start();
+            Log.e(TAG, "핸들러가 시작 되었습니다 !!!");
             final Handler backgroundHandler = new Handler(thread.getLooper());
             reader.setOnImageAvailableListener(readerListener, backgroundHandler);
 
@@ -481,6 +489,7 @@ public class CameraPreview extends Thread {
     }
 
     private Intent callResult(HashMap<String, Object> map){
+        Log.e(TAG, "분석 결과창 콜 함수 진입 !!!");
         Intent result = new Intent(mContext, ResultActivity.class);
         result.putExtra("uri", poopy_uri);
         result.putExtra("date",date);
