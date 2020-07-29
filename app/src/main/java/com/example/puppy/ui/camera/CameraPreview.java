@@ -376,9 +376,10 @@ public class CameraPreview extends Thread {
 
                         Task<Uri> uriTask=uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
                             @Override
-                            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
                                 if(!task.isSuccessful()){
                                     SweetToast.error(mContext, "Poopy Photo Error: " + task.getException().getMessage());
+                                    Log.e(TAG, "Error: " + task.getException().getMessage());
                                 }
                                 poopy_uri=riversRef.getDownloadUrl().toString();
                                 return riversRef.getDownloadUrl();
@@ -411,6 +412,9 @@ public class CameraPreview extends Thread {
                                                 }
                                             });
                                     Log.e(TAG, "저장 과정도 무사히 진행되었습니다 !!!");
+                                } else if(!task.isSuccessful()){
+                                    Log.e(TAG, "Error: " + task.getException().getMessage());
+                                    throw task.getException();
                                 }
                             }
                         });
