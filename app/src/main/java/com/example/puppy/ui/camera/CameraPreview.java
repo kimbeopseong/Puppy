@@ -372,8 +372,14 @@ public class CameraPreview extends Thread {
                         output = new FileOutputStream(file);
                         output.write(bytes);
 
-                        final StorageReference riversRef = mStorageRef.child("Feeds").child(currentUserID).child(intent.getExtras().get("pid").toString()).child(date+".jpg");
-                        UploadTask uploadTask=riversRef.putFile(uri);
+                        try{
+                            final StorageReference riversRef = mStorageRef.child("Feeds").child(currentUserID).child(intent.getExtras().get("pid").toString()).child(date+".jpg");
+                            UploadTask uploadTask=riversRef.putFile(uri);
+                            Log.e(TAG, "파이어스토어 경로 지정 완료 !!!");
+                        } catch(Exception e){
+                            e.getMessage();
+                            Log.e(TAG, "파이어스토어 에러가 발생했습니다 !!!");
+                        }
 
                         Task<Uri> uriTask=uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
                             @Override
@@ -411,10 +417,14 @@ public class CameraPreview extends Thread {
                                                     cameraFragment.finish();
                                                 }
                                             });
+                                    Log.e(TAG, "저장 과정도 무사히 진행되었습니다 !!!");
                                 }
                             }
                         });
 
+                    } catch(Exception e){
+                        e.getMessage();
+                        Log.e(TAG, "세이브 시도 중 문제가 발생하였습니다 !!!");
                     } finally {
                         if (null != output){
                             output.flush();
