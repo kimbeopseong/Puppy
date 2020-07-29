@@ -369,8 +369,6 @@ public class CameraPreview extends Thread {
                     OutputStream output = null;
                     Log.e(TAG, "세이브 함수 진입 !!!");
                     try{
-                        output = new FileOutputStream(file);
-                        output.write(bytes);
 
                         final StorageReference riversRef = mStorageRef.child("Feeds").child(currentUserID).child(intent.getExtras().get("pid").toString()).child(date+".jpg");
                         UploadTask uploadTask=riversRef.putFile(uri);
