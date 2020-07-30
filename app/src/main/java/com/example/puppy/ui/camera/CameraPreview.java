@@ -8,7 +8,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
-import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
@@ -22,6 +21,7 @@ import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -296,7 +296,7 @@ public class CameraPreview extends Thread {
             captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
 
             CameraManager manager = (CameraManager) mContext.getSystemService(Context.CAMERA_SERVICE);
-            CameraCharacteristics characteristics = manager.getCameraCharacteristics("0");
+            CameraCharacteristics characteristics = manager.getCameraCharacteristics(mCameraDevice.getId());
             deviceRotation = ((Activity)mContext).getWindowManager().getDefaultDisplay().getRotation();
             int sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
             int surfaceRotation = ORIENTATIONS.get(deviceRotation);
@@ -304,10 +304,8 @@ public class CameraPreview extends Thread {
             captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, jpegOrientation);
 
 
-            File path = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/poopy");
-            if (!path.exists()){
-                path.mkdirs();
-            }
+            File path = mkFilePath(mContext);
+
             String pic_name = String.format("%s.jpg", date);
             final File file = new File(path, pic_name);
             final Uri uri = Uri.fromFile(file);
@@ -327,10 +325,7 @@ public class CameraPreview extends Thread {
                         Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
                         Bitmap resizingImage = null;
 
-                        Matrix matrix = new Matrix();
-                        matrix.postRotate(90);
-
-                        bitmap.createBitmap(bitmap, 0, 0, 640, 480, matrix, true);
+                        bitmap.createBitmap(bitmap, 0, 0, 640, 480);
                         resizingImage = Bitmap.createScaledBitmap(bitmap, 255, 255, true);
 
                         //OpenCV imageprocessing(bitmapToMat => matToBitmap)
@@ -364,56 +359,63 @@ public class CameraPreview extends Thread {
                     try{
                         output = new FileOutputStream(file);
                         output.write(bytes);
+                        mContext.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(file)));
 
-                        final StorageReference riversRef = mStorageRef.child("Feeds").child(currentUserID).child(intent.getExtras().get("pid").toString()).child(date+".jpg");
-                        UploadTask uploadTask=riversRef.putFile(uri);
-
-                        Task<Uri> uriTask=uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
-                            @Override
-                            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                                if(!task.isSuccessful()){
-                                    SweetToast.error(mContext, "Poopy Photo Error: " + task.getException().getMessage());
-                                }
-                                poopy_uri=riversRef.getDownloadUrl().toString();
-                                return riversRef.getDownloadUrl();
-                            }
-                        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Uri> task) {
-                                if(task.isSuccessful()){
-                                    poopy_uri=task.getResult().toString();
-                                    stat = "this is stat";
-                                    lv = "1";
-
-                                    final HashMap<String, Object> update_poopy_data=new HashMap<>();
-                                    update_poopy_data.put("poopy_uri",poopy_uri);
-                                    update_poopy_data.put("uid",currentUserID);
-                                    update_poopy_data.put("date",date);
-                                    update_poopy_data.put("stat",stat);
-                                    update_poopy_data.put("lv",lv);
-
-
-                                    db.collection("Pet").document(intent.getExtras().get("pid").toString())
-                                            .collection("PoopData").document().set(update_poopy_data, SetOptions.merge())
-                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                @Override
-                                                public void onSuccess(Void aVoid) {
-                                                    Intent goResult = callResult(update_poopy_data);
-                                                    mContext.startActivity(goResult);
-                                                    CameraFragment cameraFragment = (CameraFragment) CameraFragment.cameraFragment;
-                                                    cameraFragment.finish();
-                                                }
-                                            });
-                                }
-                            }
-                        });
-
+                        saveInFirebase();
                     } finally {
                         if (null != output){
-                            output.flush();
-                            output.close();
+                            try{
+                                output.close();
+                            } catch (IOException e){
+                                e.printStackTrace();
+                            }
                         }
                     }
+                }
+
+                private void saveInFirebase(){
+                    final StorageReference riversRef = mStorageRef.child("Feeds").child(currentUserID).child(intent.getExtras().get("pid").toString()).child(date+".jpg");
+                    UploadTask uploadTask=riversRef.putFile(uri);
+
+                    Task<Uri> uriTask=uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                        @Override
+                        public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                            if(!task.isSuccessful()){
+                                SweetToast.error(mContext, "Poopy Photo Error: " + task.getException().getMessage());
+                            }
+                            poopy_uri=riversRef.getDownloadUrl().toString();
+                            return riversRef.getDownloadUrl();
+                        }
+                    }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Uri> task) {
+                            if(task.isSuccessful()){
+                                poopy_uri=task.getResult().toString();
+                                stat = "this is stat";
+                                lv = "1";
+
+                                final HashMap<String, Object> update_poopy_data=new HashMap<>();
+                                update_poopy_data.put("poopy_uri",poopy_uri);
+                                update_poopy_data.put("uid",currentUserID);
+                                update_poopy_data.put("date",date);
+                                update_poopy_data.put("stat",stat);
+                                update_poopy_data.put("lv",lv);
+
+
+                                db.collection("Pet").document(intent.getExtras().get("pid").toString())
+                                        .collection("PoopData").document().set(update_poopy_data, SetOptions.merge())
+                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void aVoid) {
+                                                Intent goResult = callResult(update_poopy_data);
+                                                mContext.startActivity(goResult);
+                                                CameraFragment cameraFragment = (CameraFragment) CameraFragment.cameraFragment;
+                                                cameraFragment.finish();
+                                            }
+                                        });
+                            }
+                        }
+                    });
                 }
             };
 
@@ -426,7 +428,7 @@ public class CameraPreview extends Thread {
                 @Override
                 public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
                     super.onCaptureCompleted(session, request, result);
-                    Toast.makeText(mContext, "Saved"+file, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mContext, "Saved on "+file, Toast.LENGTH_SHORT).show();
                     startPreview();
                 }
             };
@@ -450,6 +452,25 @@ public class CameraPreview extends Thread {
         } catch (CameraAccessException e){
             e.printStackTrace();
         }
+    }
+
+    private File mkFilePath(Context context){
+        File filePath = null;
+        if (Build.VERSION.SDK_INT < 29){
+            filePath = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/poopy");
+            if (!filePath.exists())
+                try{
+                    filePath.mkdirs();
+                } catch (Exception e){
+                    e.printStackTrace();
+                    Log.e(TAG, "Failed to create file path !!!");
+                }
+        } else {
+            filePath = new File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "poopy");
+            if (!filePath.mkdirs())
+                Log.e(TAG, "Failed to create file path !!!");
+        }
+        return filePath;
     }
 
     public void setSurfaceTextureListener(){

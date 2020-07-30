@@ -22,8 +22,6 @@ import com.example.puppy.R;
 
 import java.io.File;
 
-import xyz.hasnat.sweettoast.SweetToast;
-
 public class CameraFragment extends AppCompatActivity implements CallbackInterface {
     public static Intent intent;
     public static AppCompatActivity cameraFragment;
