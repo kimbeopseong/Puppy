@@ -119,6 +119,7 @@ public class CameraPreview extends Thread {
             @Override
             public void onClick(View view) {
                 takePicture();
+                Log.e(TAG, "촬영 버튼 클릭은 됩니다 !!!");
             }
         });
 
@@ -281,6 +282,7 @@ public class CameraPreview extends Thread {
             Log.e(TAG, "CameraDevice is null. return");
             return;
         }
+        Log.e(TAG, "촬영 함수에 진입하였습니다 !!!");
 
         try{
             int width = 640;
@@ -290,10 +292,12 @@ public class CameraPreview extends Thread {
             List<Surface> outputSurfaces = new ArrayList<>(2);
             outputSurfaces.add(reader.getSurface());
             outputSurfaces.add(new Surface(mPreview.getSurfaceTexture()));
+            Log.e(TAG, "이미지리더 객체 생성 !!!");
 
             final CaptureRequest.Builder captureBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
             captureBuilder.addTarget(reader.getSurface());
             captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+            Log.e(TAG, "캡쳐빌더 객체 생성 !!!");
 
             CameraManager manager = (CameraManager) mContext.getSystemService(Context.CAMERA_SERVICE);
             CameraCharacteristics characteristics = manager.getCameraCharacteristics(mCameraDevice.getId());
@@ -305,6 +309,7 @@ public class CameraPreview extends Thread {
 
 
             File path = mkFilePath(mContext);
+            Log.e(TAG, "파일 경로 지정 완료 !!!");
 
             String pic_name = String.format("%s.jpg", date);
             final File file = new File(path, pic_name);
@@ -314,6 +319,7 @@ public class CameraPreview extends Thread {
                 @Override
                 public void onImageAvailable(ImageReader imageReader) {
                     Image image = null;
+                    Log.e(TAG, "이미지리더 리스너 객체 함수 진입 !!!");
                     try{
                         image = reader.acquireNextImage();
                         ByteBuffer buffer = image.getPlanes()[0].getBuffer();
@@ -356,12 +362,63 @@ public class CameraPreview extends Thread {
 
                 private void save(byte[] bytes) throws IOException {
                     OutputStream output = null;
+                    Log.e(TAG, "세이브 함수 진입 !!!");
                     try{
                         output = new FileOutputStream(file);
                         output.write(bytes);
                         mContext.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(file)));
 
-                        saveInFirebase();
+                        final StorageReference riversRef = mStorageRef.child("Feeds").child(currentUserID).child(intent.getExtras().get("pid").toString()).child(date+".jpg");
+                        UploadTask uploadTask=riversRef.putFile(uri);
+                        Log.e(TAG, "파이어스토어 경로 지정 완료 !!!");
+
+                        Task<Uri> uriTask=uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                            @Override
+                            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                                if(!task.isSuccessful()){
+                                    SweetToast.error(mContext, "Poopy Photo Error: " + task.getException().getMessage());
+                                    Log.e(TAG, "Error: " + task.getException().getMessage());
+                                }
+                                poopy_uri=riversRef.getDownloadUrl().toString();
+                                return riversRef.getDownloadUrl();
+                            }
+                        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Uri> task) {
+                                if(task.isSuccessful()){
+                                    poopy_uri=task.getResult().toString();
+                                    stat = "this is stat";
+                                    lv = "1";
+
+                                    final HashMap<String, Object> update_poopy_data=new HashMap<>();
+                                    update_poopy_data.put("poopy_uri",poopy_uri);
+                                    update_poopy_data.put("uid",currentUserID);
+                                    update_poopy_data.put("date",date);
+                                    update_poopy_data.put("stat",stat);
+                                    update_poopy_data.put("lv",lv);
+
+
+                                    db.collection("Pet").document(intent.getExtras().get("pid").toString())
+                                            .collection("PoopData").document().set(update_poopy_data, SetOptions.merge())
+                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                @Override
+                                                public void onSuccess(Void aVoid) {
+                                                    Intent goResult = callResult(update_poopy_data);
+                                                    mContext.startActivity(goResult);
+                                                    CameraFragment cameraFragment = (CameraFragment) CameraFragment.cameraFragment;
+                                                    cameraFragment.finish();
+                                                }
+                                            });
+                                    Log.e(TAG, "저장 과정도 무사히 진행되었습니다 !!!");
+                                } else if(!task.isSuccessful()){
+                                    Log.e(TAG, "Error: " + task.getException().getMessage());
+                                    throw task.getException();
+                                }
+                            }
+                        });
+                    } catch(Exception e){
+                        e.getMessage();
+                        Log.e(TAG, "세이브 시도 중 문제가 발생하였습니다 !!!");
                     } finally {
                         if (null != output){
                             try{
@@ -373,54 +430,11 @@ public class CameraPreview extends Thread {
                     }
                 }
 
-                private void saveInFirebase(){
-                    final StorageReference riversRef = mStorageRef.child("Feeds").child(currentUserID).child(intent.getExtras().get("pid").toString()).child(date+".jpg");
-                    UploadTask uploadTask=riversRef.putFile(uri);
-
-                    Task<Uri> uriTask=uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
-                        @Override
-                        public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                            if(!task.isSuccessful()){
-                                SweetToast.error(mContext, "Poopy Photo Error: " + task.getException().getMessage());
-                            }
-                            poopy_uri=riversRef.getDownloadUrl().toString();
-                            return riversRef.getDownloadUrl();
-                        }
-                    }).addOnCompleteListener(new OnCompleteListener<Uri>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Uri> task) {
-                            if(task.isSuccessful()){
-                                poopy_uri=task.getResult().toString();
-                                stat = "this is stat";
-                                lv = "1";
-
-                                final HashMap<String, Object> update_poopy_data=new HashMap<>();
-                                update_poopy_data.put("poopy_uri",poopy_uri);
-                                update_poopy_data.put("uid",currentUserID);
-                                update_poopy_data.put("date",date);
-                                update_poopy_data.put("stat",stat);
-                                update_poopy_data.put("lv",lv);
-
-
-                                db.collection("Pet").document(intent.getExtras().get("pid").toString())
-                                        .collection("PoopData").document().set(update_poopy_data, SetOptions.merge())
-                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                            @Override
-                                            public void onSuccess(Void aVoid) {
-                                                Intent goResult = callResult(update_poopy_data);
-                                                mContext.startActivity(goResult);
-                                                CameraFragment cameraFragment = (CameraFragment) CameraFragment.cameraFragment;
-                                                cameraFragment.finish();
-                                            }
-                                        });
-                            }
-                        }
-                    });
-                }
             };
 
             HandlerThread thread = new HandlerThread("CameraCapture");
             thread.start();
+            Log.e(TAG, "핸들러가 시작 되었습니다 !!!");
             final Handler backgroundHandler = new Handler(thread.getLooper());
             reader.setOnImageAvailableListener(readerListener, backgroundHandler);
 
@@ -502,6 +516,7 @@ public class CameraPreview extends Thread {
     }
 
     private Intent callResult(HashMap<String, Object> map){
+        Log.e(TAG, "분석 결과창 콜 함수 진입 !!!");
         Intent result = new Intent(mContext, ResultActivity.class);
         result.putExtra("uri", poopy_uri);
         result.putExtra("date",date);
