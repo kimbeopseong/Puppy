@@ -35,6 +35,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -81,7 +82,7 @@ public class CameraPreview extends Thread {
     private TextureView mPreview;
     private Button capture;
     private StreamConfigurationMap map;
-    private CallbackInterface callbackInterface;
+//    private CallbackInterface callbackInterface;
 
     private int deviceRotation;
 
@@ -116,6 +117,7 @@ public class CameraPreview extends Thread {
         mPreview = textureView;
         capture = button;
         capture.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.R)
             @Override
             public void onClick(View view) {
                 takePicture();
@@ -137,9 +139,9 @@ public class CameraPreview extends Thread {
         currentPID = intent.getStringExtra("pid");
     }
 
-    public void setOnCallbackListener(CallbackInterface callbackInterface){
-        this.callbackInterface = callbackInterface;
-    }
+//    public void setOnCallbackListener(CallbackInterface callbackInterface){
+//        this.callbackInterface = callbackInterface;
+//    }
 
     private String getBackFacingCameraId(CameraManager cameraManager){
         try{
@@ -277,6 +279,7 @@ public class CameraPreview extends Thread {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.R)
     public void takePicture() {
         if (null == mCameraDevice){
             Log.e(TAG, "CameraDevice is null. return");
@@ -301,7 +304,7 @@ public class CameraPreview extends Thread {
 
             CameraManager manager = (CameraManager) mContext.getSystemService(Context.CAMERA_SERVICE);
             CameraCharacteristics characteristics = manager.getCameraCharacteristics(mCameraDevice.getId());
-            deviceRotation = ((Activity)mContext).getWindowManager().getDefaultDisplay().getRotation();
+            deviceRotation = mContext.getDisplay().getRotation();
             int sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
             int surfaceRotation = ORIENTATIONS.get(deviceRotation);
             int jpegOrientation = (surfaceRotation + sensorOrientation + 270) % 360;
@@ -366,7 +369,6 @@ public class CameraPreview extends Thread {
                     try{
                         output = new FileOutputStream(file);
                         output.write(bytes);
-                        mContext.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(file)));
 
                         final StorageReference riversRef = mStorageRef.child("Feeds").child(currentUserID).child(intent.getExtras().get("pid").toString()).child(date+".jpg");
                         UploadTask uploadTask=riversRef.putFile(uri);

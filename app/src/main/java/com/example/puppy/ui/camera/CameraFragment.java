@@ -22,7 +22,7 @@ import com.example.puppy.R;
 
 import java.io.File;
 
-public class CameraFragment extends AppCompatActivity implements CallbackInterface {
+public class CameraFragment extends AppCompatActivity {
     public static Intent intent;
     public static AppCompatActivity cameraFragment;
 
@@ -51,7 +51,7 @@ public class CameraFragment extends AppCompatActivity implements CallbackInterfa
         textureView = (TextureView) findViewById(R.id.cameraTextureView);
 
         cameraPreview = new CameraPreview(this, textureView, btnCapture);
-        cameraPreview.setOnCallbackListener(this);
+//        cameraPreview.setOnCallbackListener(this);
 
         int storagePermission = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if (storagePermission == PackageManager.PERMISSION_DENIED){
@@ -111,12 +111,12 @@ public class CameraFragment extends AppCompatActivity implements CallbackInterfa
         cameraPreview.onPause();
     }
 
-    @Override
-    public void onSave(File filePath){
-        Log.d(TAG, "onSave");
-        Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-        intent.setData(Uri.fromFile(filePath));
-        sendBroadcast(intent);
-    }
+//    @Override
+//    public void onSave(File filePath){
+//        Log.d(TAG, "onSave");
+//        Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+//        intent.setData(Uri.fromFile(filePath));
+//        sendBroadcast(intent);
+//    }
 
 }
